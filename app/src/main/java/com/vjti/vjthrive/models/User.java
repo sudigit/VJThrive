@@ -1,20 +1,25 @@
 package com.vjti.vjthrive.models;
 
+import java.util.List;
+
 public class User {
     private String name;
     private String email;
     private String rollNo;
-    private String programme; // B.Tech, M.Tech, Diploma
-    private String department; // CE, IT, ME, etc.
+    private String programme;   // Diploma, B.Tech., M.Tech.
+    private String department;  // Computer Engineering, IT, etc.
     private String branch;
+    private List<String> subjects;
     private int graduationYear;
-    private String role; // student, faculty, club_secretary
+    private String role;        // student, faculty, admin
 
-    public User() {
-        // Default constructor required for calls to DataSnapshot.getValue(User.class)
-    }
+    // Default constructor required for Firestore deserialization
+    public User() {}
 
-    public User(String name, String email, String rollNo, String programme, String department, String branch, int graduationYear, String role) {
+    // Full constructor (student)
+    public User(String name, String email, String rollNo, String programme,
+                String department, String branch, int graduationYear,
+                List<String> subjects, String role) {
         this.name = name;
         this.email = email;
         this.rollNo = rollNo;
@@ -22,6 +27,22 @@ public class User {
         this.department = department;
         this.branch = branch;
         this.graduationYear = graduationYear;
+        this.subjects = subjects;
+        this.role = role;
+    }
+
+    // Faculty constructor (name, email, department, role)
+    public User(String name, String email, String department, String role) {
+        this.name = name;
+        this.email = email;
+        this.department = department;
+        this.role = role;
+    }
+
+    // Admin constructor (name, email, role)
+    public User(String name, String email, String role) {
+        this.name = name;
+        this.email = email;
         this.role = role;
     }
 
@@ -45,7 +66,10 @@ public class User {
 
     public int getGraduationYear() { return graduationYear; }
     public void setGraduationYear(int graduationYear) { this.graduationYear = graduationYear; }
-    
+
+    public List<String> getSubjects() { return subjects; }
+    public void setSubjects(List<String> subjects) { this.subjects = subjects; }
+
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 }

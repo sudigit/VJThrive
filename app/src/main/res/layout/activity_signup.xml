@@ -23,6 +23,18 @@
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginTop="32dp"/>
 
+        <TextView
+            android:id="@+id/tvRoleLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorPrimary"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTitle"
+            tools:text="Signing up as Student"/>
+
+        <!-- Name -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilName"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
@@ -30,7 +42,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
             android:hint="Full Name"
-            app:layout_constraintTop_toBottomOf="@id/tvTitle">
+            app:layout_constraintTop_toBottomOf="@id/tvRoleLabel">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etName"
@@ -39,13 +51,14 @@
                 android:inputType="textPersonName" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Email -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilEmail"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:hint="College Email (@vjti.ac.in)"
+            android:hint="Email (@vjti.ac.in)"
             app:layout_constraintTop_toBottomOf="@id/tilName">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -55,6 +68,7 @@
                 android:inputType="textEmailAddress" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Password -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilPassword"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
@@ -62,6 +76,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:hint="Password"
+            app:passwordToggleEnabled="true"
             app:layout_constraintTop_toBottomOf="@id/tilEmail">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -71,6 +86,43 @@
                 android:inputType="textPassword" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Roll Number (student only) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilRollNo"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Roll Number"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/tilPassword">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etRollNo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Programme dropdown (student only) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilProgramme"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:hint="Programme"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/tilRollNo">
+
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/actvProgramme"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Department dropdown (student + faculty) -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilDepartment"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
@@ -79,7 +131,7 @@
             android:layout_marginTop="16dp"
             android:hint="Department"
             android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/tilPassword">
+            app:layout_constraintTop_toBottomOf="@id/tilProgramme">
 
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/actvDepartment"
@@ -88,6 +140,7 @@
                 android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Branch dropdown (student only) -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilBranch"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
@@ -105,6 +158,7 @@
                 android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Graduation Year dropdown (student only) -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilGraduationYear"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
@@ -122,6 +176,7 @@
                 android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Register Button -->
         <Button
             android:id="@+id/btnRegister"
             android:layout_width="match_parent"

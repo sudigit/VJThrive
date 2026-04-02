@@ -27,10 +27,13 @@ public class LoginActivity extends AppCompatActivity {
         // Check if user is already logged in
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
+        if (currentUser != null && currentUser.isEmailVerified()) {
             startActivity(new Intent(LoginActivity.this, MainActivity.class));
             finish();
             return; // Important: Return so layout doesn't inflate
+        } else if (currentUser != null) {
+            // User exists but email not verified — sign them out
+            mAuth.signOut();
         }
 
         setContentView(R.layout.activity_login);
@@ -62,11 +65,24 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     btnLogin.setEnabled(true);
                     if (task.isSuccessful()) {
-                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                        finish();
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null && user.isEmailVerified()) {
+                            // Email verified — proceed to main app
+                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                            finish();
+                        } else {
+                            // Email NOT verified — block login
+                            mAuth.signOut();
+                            Toast.makeText(LoginActivity.this,
+                                    "Please verify your email first. Check your inbox.",
+                                    Toast.LENGTH_LONG).show();
+                        }
                     } else {
-                        Toast.makeText(LoginActivity.this, "Authentication failed.",
-                                Toast.LENGTH_SHORT).show();
+                        String errorMsg = task.getException() != null
+                                ? task.getException().getMessage()
+                                : "Authentication failed.";
+                        Toast.makeText(LoginActivity.this, errorMsg,
+                                Toast.LENGTH_LONG).show();
                     }
                 });
     }
