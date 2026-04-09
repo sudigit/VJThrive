@@ -68,8 +68,7 @@ public class MainActivity extends AppCompatActivity {
                 // selectedFragment = new CalendarFragment();
                 return true; // placeholder
             } else if (itemId == R.id.nav_messages) {
-                // selectedFragment = new MessagesFragment();
-                return true; // placeholder
+                selectedFragment = new MessagesFragment();
             }
             
             if (selectedFragment != null) {
