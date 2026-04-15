@@ -10,7 +10,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.vjti.vjthrive.models.Message;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
@@ -19,10 +23,13 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     private List<Message> messageList;
     private String currentUserId;
+    private boolean isGroup;
+    private SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
 
-    public MessageAdapter(List<Message> messageList, String currentUserId) {
+    public MessageAdapter(List<Message> messageList, String currentUserId, boolean isGroup) {
         this.messageList = messageList;
         this.currentUserId = currentUserId;
+        this.isGroup = isGroup;
     }
 
     @Override
@@ -51,9 +58,9 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Message message = messageList.get(position);
         if (holder.getItemViewType() == VIEW_TYPE_SENT) {
-            ((SentMessageViewHolder) holder).bind(message);
+            ((SentMessageViewHolder) holder).bind(message, timeFormat);
         } else {
-            ((ReceivedMessageViewHolder) holder).bind(message);
+            ((ReceivedMessageViewHolder) holder).bind(message, isGroup, timeFormat);
         }
     }
 
@@ -63,28 +70,51 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     static class SentMessageViewHolder extends RecyclerView.ViewHolder {
-        TextView tvMessageBody;
+        TextView tvMessageBody, tvMessageTime;
 
         SentMessageViewHolder(View itemView) {
             super(itemView);
             tvMessageBody = itemView.findViewById(R.id.tvMessageBody);
+            tvMessageTime = itemView.findViewById(R.id.tvMessageTime);
         }
 
-        void bind(Message message) {
+        void bind(Message message, SimpleDateFormat timeFormat) {
             tvMessageBody.setText(message.getText());
+            if (message.getTimestamp() != null && message.getTimestamp() instanceof com.google.firebase.Timestamp) {
+                Date date = ((com.google.firebase.Timestamp) message.getTimestamp()).toDate();
+                tvMessageTime.setText(timeFormat.format(date));
+            } else {
+                tvMessageTime.setText("...");
+            }
         }
     }
 
     static class ReceivedMessageViewHolder extends RecyclerView.ViewHolder {
-        TextView tvMessageBody;
+        TextView tvMessageBody, tvSenderName, tvMessageTime;
 
         ReceivedMessageViewHolder(View itemView) {
             super(itemView);
             tvMessageBody = itemView.findViewById(R.id.tvMessageBody);
+            tvSenderName = itemView.findViewById(R.id.tvSenderName);
+            tvMessageTime = itemView.findViewById(R.id.tvMessageTime);
         }
 
-        void bind(Message message) {
+        void bind(Message message, boolean isGroup, SimpleDateFormat timeFormat) {
             tvMessageBody.setText(message.getText());
+            
+            if (isGroup && message.getSenderName() != null) {
+                tvSenderName.setVisibility(View.VISIBLE);
+                tvSenderName.setText(message.getSenderName());
+            } else {
+                tvSenderName.setVisibility(View.GONE);
+            }
+
+            if (message.getTimestamp() != null && message.getTimestamp() instanceof com.google.firebase.Timestamp) {
+                Date date = ((com.google.firebase.Timestamp) message.getTimestamp()).toDate();
+                tvMessageTime.setText(timeFormat.format(date));
+            } else {
+                tvMessageTime.setText("");
+            }
         }
     }
 }

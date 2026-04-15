@@ -11,7 +11,18 @@
         android:layout_height="wrap_content"
         android:background="@drawable/bg_message_received"
         android:padding="12dp"
-        android:layout_marginEnd="48dp">
+        android:layout_marginEnd="48dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvSenderName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="?attr/colorPrimary"
+            android:textStyle="bold"
+            android:textSize="12sp"
+            android:layout_marginBottom="2dp"
+            android:visibility="gone" />
 
         <TextView
             android:id="@+id/tvMessageBody"
@@ -19,6 +30,16 @@
             android:layout_height="wrap_content"
             android:textColor="?attr/colorOnSurfaceVariant"
             android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/tvMessageTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="2dp"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:alpha="0.7"
+            android:textSize="10sp" />
 
     </LinearLayout>
 

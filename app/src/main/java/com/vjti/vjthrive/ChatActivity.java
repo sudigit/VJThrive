@@ -41,6 +41,8 @@ public class ChatActivity extends AppCompatActivity {
     private String currentUserId;
     private String chatId;
     private String chatName;
+    private String currentUserName;
+    private boolean isGroupChat = false;
     private CollectionReference messagesRef;
 
     @Override
@@ -76,24 +78,59 @@ public class ChatActivity extends AppCompatActivity {
         
         if (currentUser != null) {
             currentUserId = currentUser.getUid();
+            fetchCurrentUserName();
         } else {
-            finish(); // Should not happen
+            finish();
             return;
         }
 
-        messagesRef = db.collection("chats").document(chatId).collection("messages");
-
-        messageList = new ArrayList<>();
-        messageAdapter = new MessageAdapter(messageList, currentUserId);
-        
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
-        layoutManager.setStackFromEnd(true);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(messageAdapter);
-
-        loadMessages();
+        fetchChatDetailsAndSetupAdapter();
 
         btnSendMessage.setOnClickListener(v -> sendMessage());
+    }
+
+    private void fetchCurrentUserName() {
+        db.collection("users").document(currentUserId).get().addOnSuccessListener(doc -> {
+            if (doc.exists()) {
+                currentUserName = doc.getString("name");
+            }
+        });
+    }
+
+    private void fetchChatDetailsAndSetupAdapter() {
+        db.collection("chats").document(chatId).get().addOnSuccessListener(doc -> {
+            if (doc.exists()) {
+                Boolean grp = doc.getBoolean("group");
+                isGroupChat = grp != null && grp;
+                
+                // If it's 1:1, resolve the other person's name for the title
+                if (!isGroupChat) {
+                    List<String> members = (List<String>) doc.get("members");
+                    if (members != null && members.size() == 2) {
+                        String otherId = members.get(0).equals(currentUserId) ? members.get(1) : members.get(0);
+                        db.collection("users").document(otherId).get().addOnSuccessListener(userDoc -> {
+                            if (userDoc.exists()) {
+                                String otherName = userDoc.getString("name");
+                                if (getSupportActionBar() != null && otherName != null) {
+                                    getSupportActionBar().setTitle(otherName);
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+            
+            messagesRef = db.collection("chats").document(chatId).collection("messages");
+            messageList = new ArrayList<>();
+            messageAdapter = new MessageAdapter(messageList, currentUserId, isGroupChat);
+            
+            LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+            layoutManager.setStackFromEnd(true);
+            recyclerView.setLayoutManager(layoutManager);
+            recyclerView.setAdapter(messageAdapter);
+            
+            loadMessages();
+        });
     }
 
     private void loadMessages() {
@@ -127,6 +164,7 @@ public class ChatActivity extends AppCompatActivity {
         Map<String, Object> messageMap = new HashMap<>();
         messageMap.put("text", text);
         messageMap.put("senderId", currentUserId);
+        messageMap.put("senderName", currentUserName != null ? currentUserName : "User");
         messageMap.put("timestamp", FieldValue.serverTimestamp());
 
         messagesRef.add(messageMap).addOnFailureListener(e -> {

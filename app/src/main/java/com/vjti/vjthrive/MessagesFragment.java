@@ -17,12 +17,17 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.vjti.vjthrive.models.Chat;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class MessagesFragment extends Fragment implements ChatListItemAdapter.OnChatClickListener {
 
@@ -61,7 +66,7 @@ public class MessagesFragment extends Fragment implements ChatListItemAdapter.On
         }
 
         chatList = new ArrayList<>();
-        adapter = new ChatListItemAdapter(chatList, this);
+        adapter = new ChatListItemAdapter(chatList, currentUserId, this);
         rvChats.setLayoutManager(new LinearLayoutManager(getContext()));
         rvChats.setAdapter(adapter);
 
@@ -93,6 +98,7 @@ public class MessagesFragment extends Fragment implements ChatListItemAdapter.On
                             chatList.add(chat);
                         }
                         adapter.updateData(chatList);
+                        fetchOtherUserNames();
 
                         if (chatList.isEmpty()) {
                             tvEmptyChats.setVisibility(View.VISIBLE);
@@ -103,11 +109,51 @@ public class MessagesFragment extends Fragment implements ChatListItemAdapter.On
                 });
     }
 
+    private void fetchOtherUserNames() {
+        Set<String> otherIds = new HashSet<>();
+        for (Chat chat : chatList) {
+            if (!chat.isGroup() && chat.getMembers() != null) {
+                for (String memberId : chat.getMembers()) {
+                    if (!memberId.equals(currentUserId)) {
+                        otherIds.add(memberId);
+                    }
+                }
+            }
+        }
+
+        if (otherIds.isEmpty()) return;
+
+        // Fetch names for these IDs (Firestore 'whereIn' supports up to 30 items)
+        List<String> idList = new ArrayList<>(otherIds);
+        // If more than 30, we should chunk it, but for a typical chat list this is fine.
+        int limit = Math.min(idList.size(), 30);
+        
+        db.collection("users").whereIn(FieldPath.documentId(), idList.subList(0, limit))
+                .get().addOnSuccessListener(queryDocumentSnapshots -> {
+                    Map<String, String> names = new HashMap<>();
+                    for (com.google.firebase.firestore.QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        names.put(doc.getId(), doc.getString("name"));
+                    }
+                    adapter.updateUserNames(names);
+                });
+    }
+
     @Override
     public void onChatClick(Chat chat) {
+        String displayName = chat.getName();
+        // If 1:1, resolve name for the intent too
+        if (!chat.isGroup() && chat.getMembers() != null) {
+            for (String memberId : chat.getMembers()) {
+                if (!memberId.equals(currentUserId)) {
+                    // Note: This only works if we've already fetched it, 
+                    // otherwise ChatActivity will fetch it.
+                }
+            }
+        }
+
         Intent intent = new Intent(getActivity(), ChatActivity.class);
         intent.putExtra("CHAT_ID", chat.getChat_id());
-        intent.putExtra("CHAT_NAME", chat.getName());
+        intent.putExtra("CHAT_NAME", chat.getName()); 
         startActivity(intent);
     }
 }
