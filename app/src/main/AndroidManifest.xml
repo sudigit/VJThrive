@@ -26,6 +26,9 @@
         <activity android:name=".SignupActivity" />
         <activity android:name=".AddNoticeActivity" />
         <activity android:name=".AddClubEventActivity" />
+        <activity android:name=".ChatActivity" />
+        <activity android:name=".CreateChatActivity" />
+        <activity android:name=".CreateFacultyGroupActivity" />
 
     </application>
 

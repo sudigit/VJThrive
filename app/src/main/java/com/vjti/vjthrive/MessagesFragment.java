@@ -1,135 +1,113 @@
 package com.vjti.vjthrive;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.vjti.vjthrive.models.Message;
+import com.vjti.vjthrive.models.Chat;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class MessagesFragment extends Fragment {
+public class MessagesFragment extends Fragment implements ChatListItemAdapter.OnChatClickListener {
 
-    private RecyclerView recyclerView;
-    private MessageAdapter messageAdapter;
-    private List<Message> messageList;
-    private EditText etMessageInput;
-    private ImageButton btnSendMessage;
-    private ProgressBar progressBar;
-
+    private RecyclerView rvChats;
+    private TextView tvEmptyChats;
+    private FloatingActionButton fabNewChat;
+    
+    private ChatListItemAdapter adapter;
+    private List<Chat> chatList;
+    
     private FirebaseFirestore db;
     private String currentUserId;
-    private CollectionReference messagesRef;
 
-    @Nullable
+    public MessagesFragment() {
+        // Required empty public constructor
+    }
+
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_messages, container, false);
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_chat_list, container, false);
+    }
 
-        // Setup Toolbar
-        Toolbar toolbarPath = view.findViewById(R.id.toolbarChat);
-        toolbarPath.setTitle("Chat");
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        recyclerView = view.findViewById(R.id.recyclerViewMessages);
-        etMessageInput = view.findViewById(R.id.etMessageInput);
-        btnSendMessage = view.findViewById(R.id.btnSendMessage);
-        progressBar = view.findViewById(R.id.progressBar);
+        rvChats = view.findViewById(R.id.rvChats);
+        tvEmptyChats = view.findViewById(R.id.tvEmptyChats);
+        fabNewChat = view.findViewById(R.id.fabNewChat);
 
         db = FirebaseFirestore.getInstance();
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        
         if (currentUser != null) {
             currentUserId = currentUser.getUid();
-        } else {
-            currentUserId = ""; // fallback
         }
 
-        messagesRef = db.collection("chats").document("chat1").collection("messages");
+        chatList = new ArrayList<>();
+        adapter = new ChatListItemAdapter(chatList, this);
+        rvChats.setLayoutManager(new LinearLayoutManager(getContext()));
+        rvChats.setAdapter(adapter);
 
-        messageList = new ArrayList<>();
-        messageAdapter = new MessageAdapter(messageList, currentUserId);
-        
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-        layoutManager.setStackFromEnd(true); // Start from bottom
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setAdapter(messageAdapter);
+        fabNewChat.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), CreateChatActivity.class);
+            startActivity(intent);
+        });
 
-        loadMessages();
-
-        btnSendMessage.setOnClickListener(v -> sendMessage());
-
-        return view;
+        loadUserChats();
     }
 
-    private void loadMessages() {
-        progressBar.setVisibility(View.VISIBLE);
-        messagesRef.orderBy("timestamp", Query.Direction.ASCENDING).addSnapshotListener((value, error) -> {
-            progressBar.setVisibility(View.GONE);
-            if (error != null) {
-                if (getContext() != null) {
-                    Toast.makeText(getContext(), "Error loading messages.", Toast.LENGTH_SHORT).show();
-                }
-                return;
-            }
+    private void loadUserChats() {
+        if (currentUserId == null) return;
 
-            if (value != null) {
-                for (DocumentChange dc : value.getDocumentChanges()) {
-                    switch (dc.getType()) {
-                        case ADDED:
-                            Message message = dc.getDocument().toObject(Message.class);
-                            messageList.add(message);
-                            messageAdapter.notifyItemInserted(messageList.size() - 1);
-                            recyclerView.scrollToPosition(messageList.size() - 1);
-                            break;
-                        case MODIFIED:
-                            // Handle modification if needed
-                            break;
-                        case REMOVED:
-                            // Handle removal if needed
-                            break;
+        // Query chats where current user is a member
+        db.collection("chats")
+                .whereArrayContains("members", currentUserId)
+                .addSnapshotListener((value, error) -> {
+                    if (error != null) {
+                        Toast.makeText(getContext(), "Error loading chats", Toast.LENGTH_SHORT).show();
+                        return;
                     }
-                }
-            }
-        });
+
+                    if (value != null) {
+                        chatList.clear();
+                        for (com.google.firebase.firestore.QueryDocumentSnapshot doc : value) {
+                            Chat chat = doc.toObject(Chat.class);
+                            chat.setChat_id(doc.getId());
+                            chatList.add(chat);
+                        }
+                        adapter.updateData(chatList);
+
+                        if (chatList.isEmpty()) {
+                            tvEmptyChats.setVisibility(View.VISIBLE);
+                        } else {
+                            tvEmptyChats.setVisibility(View.GONE);
+                        }
+                    }
+                });
     }
 
-    private void sendMessage() {
-        String text = etMessageInput.getText().toString().trim();
-        if (text.isEmpty() || currentUserId.isEmpty()) return;
-
-        etMessageInput.setText("");
-
-        Map<String, Object> messageMap = new HashMap<>();
-        messageMap.put("text", text);
-        messageMap.put("senderId", currentUserId);
-        messageMap.put("timestamp", FieldValue.serverTimestamp());
-
-        messagesRef.add(messageMap).addOnFailureListener(e -> {
-            if (getContext() != null) {
-                Toast.makeText(getContext(), "Failed to send message", Toast.LENGTH_SHORT).show();
-            }
-        });
+    @Override
+    public void onChatClick(Chat chat) {
+        Intent intent = new Intent(getActivity(), ChatActivity.class);
+        intent.putExtra("CHAT_ID", chat.getChat_id());
+        intent.putExtra("CHAT_NAME", chat.getName());
+        startActivity(intent);
     }
 }
