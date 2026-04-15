@@ -12,6 +12,7 @@ public class User {
     private List<String> subjects;
     private int graduationYear;
     private String role;        // student, faculty, admin
+    private boolean isSecretary;
 
     // Default constructor required for Firestore deserialization
     public User() {}
@@ -19,7 +20,7 @@ public class User {
     // Full constructor (student)
     public User(String name, String email, String rollNo, String programme,
                 String department, String branch, int graduationYear,
-                List<String> subjects, String role) {
+                List<String> subjects, String role, boolean isSecretary) {
         this.name = name;
         this.email = email;
         this.rollNo = rollNo;
@@ -29,21 +30,24 @@ public class User {
         this.graduationYear = graduationYear;
         this.subjects = subjects;
         this.role = role;
+        this.isSecretary = isSecretary;
     }
 
     // Faculty constructor (name, email, department, role)
-    public User(String name, String email, String department, String role) {
+    public User(String name, String email, String department, String role, boolean isSecretary) {
         this.name = name;
         this.email = email;
         this.department = department;
         this.role = role;
+        this.isSecretary = isSecretary;
     }
 
     // Admin constructor (name, email, role)
-    public User(String name, String email, String role) {
+    public User(String name, String email, String role, boolean isSecretary) {
         this.name = name;
         this.email = email;
         this.role = role;
+        this.isSecretary = isSecretary;
     }
 
     public String getName() { return name; }
@@ -72,4 +76,7 @@ public class User {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
+
+    public boolean isSecretary() { return isSecretary; }
+    public void setSecretary(boolean secretary) { isSecretary = secretary; }
 }

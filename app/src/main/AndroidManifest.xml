@@ -25,6 +25,7 @@
         <activity android:name=".RoleSelectionActivity" />
         <activity android:name=".SignupActivity" />
         <activity android:name=".AddNoticeActivity" />
+        <activity android:name=".AddClubEventActivity" />
 
     </application>
 

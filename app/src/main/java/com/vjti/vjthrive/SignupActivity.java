@@ -276,6 +276,7 @@ public class SignupActivity extends AppCompatActivity {
         userData.put("name", name);
         userData.put("email", email);
         userData.put("role", role);
+        userData.put("isSecretary", false);
 
         if ("student".equals(role)) {
             userData.put("rollNo", rollNo);
