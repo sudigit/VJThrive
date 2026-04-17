@@ -57,6 +57,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")     // For Login
     implementation("com.google.firebase:firebase-firestore") // For Notices/Chats
     implementation("com.google.firebase:firebase-storage")  // For Attachments
+    implementation(libs.material.calendar.view)
 
 
     // Add the dependencies for any other desired Firebase products

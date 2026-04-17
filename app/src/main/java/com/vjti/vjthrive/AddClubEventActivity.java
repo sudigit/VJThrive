@@ -115,12 +115,13 @@ public class AddClubEventActivity extends AppCompatActivity {
     }
 
     private void postClubEvent() {
-        String club = etClub.getText().toString().trim();
+        String clubId = etClub.getText().toString().trim();
         String title = etTitle.getText().toString().trim();
-        String content = etContent.getText().toString().trim();
-        String attachment = etAttachment.getText().toString().trim();
+        String description = etContent.getText().toString().trim();
+        // Attachment and selectedColor are kept for UI/Logic but not explicitly required by the user in 'events'
+        // String attachment = etAttachment.getText().toString().trim();
 
-        if (TextUtils.isEmpty(club)) {
+        if (TextUtils.isEmpty(clubId)) {
             etClub.setError("Club name is required");
             return;
         }
@@ -128,7 +129,7 @@ public class AddClubEventActivity extends AppCompatActivity {
             etTitle.setError("Title is required");
             return;
         }
-        if (TextUtils.isEmpty(content)) {
+        if (TextUtils.isEmpty(description)) {
             etContent.setError("Content is required");
             return;
         }
@@ -140,27 +141,32 @@ public class AddClubEventActivity extends AppCompatActivity {
         fabSend.setEnabled(false);
         Toast.makeText(this, "Posting update...", Toast.LENGTH_SHORT).show();
 
-        String eventId = UUID.randomUUID().toString();
-        long timestamp = System.currentTimeMillis();
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser() != null ? 
+                FirebaseAuth.getInstance().getCurrentUser().getUid() : "unknown";
 
-        ClubEvent event = new ClubEvent(
-                eventId,
-                club,
+        // Convert long eventDate to Firestore Timestamp
+        com.google.firebase.Timestamp eventTimestamp = new com.google.firebase.Timestamp(new Date(selectedEventDate));
+
+        // Using standard Event model for consistency
+        com.vjti.vjthrive.models.Event event = new com.vjti.vjthrive.models.Event(
                 title,
-                content,
-                attachment,
-                selectedColor,
-                selectedEventDate,
-                timestamp
+                description,
+                eventTimestamp,
+                clubId,
+                currentUserId
         );
 
-        db.collection("club_events").document(eventId)
-                .set(event)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(AddClubEventActivity.this, "Update posted successfully!", Toast.LENGTH_LONG).show();
+        Log.d(TAG, "Saving event to Firestore: " + title);
+
+        db.collection("events")
+                .add(event)
+                .addOnSuccessListener(documentReference -> {
+                    Log.d(TAG, "Event saved successfully with ID: " + documentReference.getId());
+                    Toast.makeText(AddClubEventActivity.this, "Event posted successfully!", Toast.LENGTH_LONG).show();
                     finish();
                 })
                 .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error saving event", e);
                     fabSend.setEnabled(true);
                     Toast.makeText(AddClubEventActivity.this, "Failed to post: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });

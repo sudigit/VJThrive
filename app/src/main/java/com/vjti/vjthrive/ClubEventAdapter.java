@@ -1,7 +1,5 @@
 package com.vjti.vjthrive;
 
-import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.card.MaterialCardView;
-import com.vjti.vjthrive.models.ClubEvent;
+import com.vjti.vjthrive.models.Event;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -22,17 +20,17 @@ import java.util.Locale;
 
 public class ClubEventAdapter extends RecyclerView.Adapter<ClubEventAdapter.ClubEventViewHolder> {
 
-    private List<ClubEvent> clubEventList;
+    private List<Event> eventList;
     private String userRole;
     private OnClubEventClickListener clickListener;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
 
     public interface OnClubEventClickListener {
-        void onDeleteClick(ClubEvent clubEvent, int position);
+        void onDeleteClick(Event event, int position);
     }
 
-    public ClubEventAdapter(List<ClubEvent> clubEventList, String userRole, OnClubEventClickListener clickListener) {
-        this.clubEventList = clubEventList;
+    public ClubEventAdapter(List<Event> eventList, String userRole, OnClubEventClickListener clickListener) {
+        this.eventList = eventList;
         this.userRole = userRole;
         this.clickListener = clickListener;
     }
@@ -46,22 +44,21 @@ public class ClubEventAdapter extends RecyclerView.Adapter<ClubEventAdapter.Club
 
     @Override
     public void onBindViewHolder(@NonNull ClubEventViewHolder holder, int position) {
-        ClubEvent event = clubEventList.get(position);
-        holder.tvClubName.setText(event.getClub());
+        Event event = eventList.get(position);
+        holder.tvClubName.setText(event.getClubId());
         holder.tvTitle.setText(event.getTitle());
-        holder.tvEventDate.setText("Event Date: " + dateFormat.format(new Date(event.getEventDate())));
-        holder.tvContent.setText(event.getContent());
-        holder.tvDate.setText(dateFormat.format(new Date(event.getTimestamp())));
-
-        // Apply colour accent
-        if (event.getColour() != null) {
-            try {
-                int color = Color.parseColor(event.getColour());
-                holder.cardView.setStrokeColor(color);
-                holder.tvClubName.setTextColor(color);
-            } catch (Exception e) {
-                // Ignore invalid colors
-            }
+        
+        if (event.getEventDate() != null) {
+            holder.tvEventDate.setText("Event Date: " + dateFormat.format(event.getEventDate().toDate()));
+        } else {
+            holder.tvEventDate.setText("No date set");
+        }
+        
+        holder.tvContent.setText(event.getDescription());
+        
+        // Use event date as display date if created timestamp is missing
+        if (event.getEventDate() != null) {
+            holder.tvDate.setText(dateFormat.format(event.getEventDate().toDate()));
         }
 
         // Show options menu only for admin
@@ -88,12 +85,11 @@ public class ClubEventAdapter extends RecyclerView.Adapter<ClubEventAdapter.Club
 
     @Override
     public int getItemCount() {
-        return clubEventList.size();
+        return eventList.size();
     }
 
-    public void updateData(List<ClubEvent> newEvents) {
-        this.clubEventList.clear();
-        this.clubEventList.addAll(newEvents);
+    public void updateData(List<Event> newEvents) {
+        this.eventList = newEvents;
         notifyDataSetChanged();
     }
 

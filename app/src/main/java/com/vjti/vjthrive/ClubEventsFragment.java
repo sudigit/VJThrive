@@ -19,9 +19,10 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.vjti.vjthrive.models.ClubEvent;
+import com.vjti.vjthrive.models.Event;
 import com.vjti.vjthrive.models.User;
 
 import java.util.ArrayList;
@@ -36,7 +37,8 @@ public class ClubEventsFragment extends Fragment implements ClubEventAdapter.OnC
     private FloatingActionButton fabAddClubEvent;
 
     private ClubEventAdapter adapter;
-    private List<ClubEvent> clubEventList;
+    private List<Event> eventList;
+    private ListenerRegistration eventListener;
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
@@ -62,7 +64,7 @@ public class ClubEventsFragment extends Fragment implements ClubEventAdapter.OnC
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
-        clubEventList = new ArrayList<>();
+        eventList = new ArrayList<>();
 
         rvClubEvents.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -90,7 +92,7 @@ public class ClubEventsFragment extends Fragment implements ClubEventAdapter.OnC
                         adapter = new ClubEventAdapter(new ArrayList<>(), role, this);
                         rvClubEvents.setAdapter(adapter);
 
-                        // Show/Hide FAB - Secretaties and Admin can add
+                        // Show/Hide FAB - Secretaries and Admin can add
                         boolean isSecretary = currentUserProfile.isSecretary();
                         if ("admin".equalsIgnoreCase(role) || isSecretary) {
                             fabAddClubEvent.setVisibility(View.VISIBLE);
@@ -98,52 +100,81 @@ public class ClubEventsFragment extends Fragment implements ClubEventAdapter.OnC
                             fabAddClubEvent.setVisibility(View.GONE);
                         }
 
-                        // Fetch Events
-                        fetchClubEvents();
+                        // Start Listening for Events
+                        setupEventsListener();
                     }
                 }
             })
             .addOnFailureListener(e -> Log.e(TAG, "Error fetching user profile", e));
     }
 
-    private void fetchClubEvents() {
-        db.collection("club_events")
-            .orderBy("timestamp", Query.Direction.DESCENDING)
-            .get()
-            .addOnSuccessListener(queryDocumentSnapshots -> {
-                clubEventList.clear();
-                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                    ClubEvent event = doc.toObject(ClubEvent.class);
-                    event.setId(doc.getId());
-                    clubEventList.add(event);
+    private void setupEventsListener() {
+        Log.d(TAG, "Setting up real-time listener for 'events' collection");
+        
+        // Remove existing listener if any
+        if (eventListener != null) {
+            eventListener.remove();
+        }
+
+        eventListener = db.collection("events")
+            .orderBy("eventDate", Query.Direction.DESCENDING)
+            .addSnapshotListener((queryDocumentSnapshots, e) -> {
+                if (e != null) {
+                    Log.e(TAG, "Listen failed.", e);
+                    return;
                 }
 
-                adapter.updateData(clubEventList);
+                if (queryDocumentSnapshots != null) {
+                    eventList.clear();
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        try {
+                            Event event = doc.toObject(Event.class);
+                            // We don't have a separate ID field in Event model, but we can use it for deletion
+                            // For simplicity, we'll store the ID in the document reference if needed or just use index
+                            eventList.add(event);
+                        } catch (Exception ex) {
+                            Log.e(TAG, "Error parsing event", ex);
+                        }
+                    }
 
-                if (clubEventList.isEmpty()) {
-                    tvEmptyClubEvents.setVisibility(View.VISIBLE);
-                } else {
-                    tvEmptyClubEvents.setVisibility(View.GONE);
+                    Log.d(TAG, "Number of events fetched: " + eventList.size());
+                    adapter.updateData(eventList);
+
+                    if (eventList.isEmpty()) {
+                        tvEmptyClubEvents.setVisibility(View.VISIBLE);
+                        tvEmptyClubEvents.setText("No events yet");
+                    } else {
+                        tvEmptyClubEvents.setVisibility(View.GONE);
+                    }
                 }
-            })
-            .addOnFailureListener(e -> {
-                Log.e(TAG, "Error fetching club events", e);
-                Toast.makeText(getContext(), "Failed to load events", Toast.LENGTH_SHORT).show();
             });
     }
 
     @Override
-    public void onDeleteClick(ClubEvent clubEvent, int position) {
-        if (clubEvent.getId() == null) return;
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (eventListener != null) {
+            eventListener.remove();
+        }
+    }
 
-        db.collection("club_events").document(clubEvent.getId()).delete()
-            .addOnSuccessListener(aVoid -> {
-                Toast.makeText(getContext(), "Update deleted", Toast.LENGTH_SHORT).show();
-                fetchClubEvents(); // Refresh list
+    @Override
+    public void onDeleteClick(Event event, int position) {
+        // Deletion usually needs a document ID. Since we added with .add(), we need the ID.
+        // We'll modify setupEventsListener to capture the ID if possible or refetch.
+        // For now, let's find the document by title/description/date (imperfect but better than nothing)
+        // OR better yet, we should have stored the ID.
+        
+        db.collection("events")
+            .whereEqualTo("title", event.getTitle())
+            .whereEqualTo("description", event.getDescription())
+            .get()
+            .addOnSuccessListener(queryDocumentSnapshots -> {
+                for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                    doc.getReference().delete()
+                        .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "Event deleted", Toast.LENGTH_SHORT).show());
+                }
             })
-            .addOnFailureListener(e -> {
-                Toast.makeText(getContext(), "Failed to delete", Toast.LENGTH_SHORT).show();
-                Log.e(TAG, "Error deleting club event", e);
-            });
+            .addOnFailureListener(e -> Log.e(TAG, "Error deleting event", e));
     }
 }

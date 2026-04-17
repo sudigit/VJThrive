@@ -64,8 +64,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (itemId == R.id.nav_clubs) {
                 selectedFragment = new ClubEventsFragment();
             } else if (itemId == R.id.nav_calendar) {
-                // selectedFragment = new CalendarFragment();
-                return true; // placeholder
+                selectedFragment = new CalendarFragment();
             } else if (itemId == R.id.nav_messages) {
                 selectedFragment = new MessagesFragment();
             }
