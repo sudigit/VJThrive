@@ -8,17 +8,19 @@ public class Event {
     private Timestamp eventDate;
     private String clubId;
     private String createdBy;
+    private String attachment;
 
     public Event() {
         // Required empty constructor for Firestore
     }
 
-    public Event(String title, String description, Timestamp eventDate, String clubId, String createdBy) {
+    public Event(String title, String description, Timestamp eventDate, String clubId, String createdBy, String attachment) {
         this.title = title;
         this.description = description;
         this.eventDate = eventDate;
         this.clubId = clubId;
         this.createdBy = createdBy;
+        this.attachment = attachment;
     }
 
     public String getTitle() {
@@ -59,6 +61,14 @@ public class Event {
 
     public void setCreatedBy(String createdBy) {
         this.createdBy = createdBy;
+    }
+
+    public String getAttachment() {
+        return attachment;
+    }
+
+    public void setAttachment(String attachment) {
+        this.attachment = attachment;
     }
 
     // Helper to get milliseconds

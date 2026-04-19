@@ -47,18 +47,53 @@ public class ClubEventAdapter extends RecyclerView.Adapter<ClubEventAdapter.Club
         Event event = eventList.get(position);
         holder.tvClubName.setText(event.getClubId());
         holder.tvTitle.setText(event.getTitle());
-        
+
         if (event.getEventDate() != null) {
             holder.tvEventDate.setText("Event Date: " + dateFormat.format(event.getEventDate().toDate()));
         } else {
             holder.tvEventDate.setText("No date set");
         }
-        
+
         holder.tvContent.setText(event.getDescription());
-        
+
         // Use event date as display date if created timestamp is missing
         if (event.getEventDate() != null) {
             holder.tvDate.setText(dateFormat.format(event.getEventDate().toDate()));
+        }
+
+        // Handle Attachments
+        String attachment = event.getAttachment();
+        if (attachment != null && !attachment.isEmpty()) {
+            holder.btnViewAttachment.setVisibility(View.VISIBLE);
+            
+            boolean isPdf = attachment.toLowerCase().contains(".pdf");
+            holder.btnViewAttachment.setText(isPdf ? "View PDF" : "View Image");
+
+            holder.btnViewAttachment.setOnClickListener(v -> {
+                android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(attachment));
+                v.getContext().startActivity(intent);
+            });
+
+            // If it's an image or PDF, show preview
+            if (isPdf || attachment.contains(".jpg") || attachment.contains(".jpeg") || attachment.contains(".png") || attachment.contains(".webp") || attachment.contains("image/upload")) {
+                holder.ivAttachment.setVisibility(View.VISIBLE);
+                
+                String previewUrl = attachment;
+                if (isPdf && attachment.contains("/image/upload/")) {
+                    previewUrl = attachment.replaceAll("(?i)\\.pdf", ".jpg").replace("/image/upload/", "/image/upload/pg_1/");
+                }
+
+                com.bumptech.glide.Glide.with(holder.itemView.getContext())
+                        .load(previewUrl)
+                        .placeholder(android.R.drawable.ic_menu_gallery)
+                        .error(android.R.drawable.ic_menu_report_image)
+                        .into(holder.ivAttachment);
+            } else {
+                holder.ivAttachment.setVisibility(View.GONE);
+            }
+        } else {
+            holder.ivAttachment.setVisibility(View.GONE);
+            holder.btnViewAttachment.setVisibility(View.GONE);
         }
 
         // Show options menu only for admin
@@ -96,7 +131,8 @@ public class ClubEventAdapter extends RecyclerView.Adapter<ClubEventAdapter.Club
     static class ClubEventViewHolder extends RecyclerView.ViewHolder {
         MaterialCardView cardView;
         TextView tvClubName, tvTitle, tvEventDate, tvContent, tvDate;
-        ImageView ivOptions;
+        android.widget.ImageView ivOptions, ivAttachment;
+        android.widget.Button btnViewAttachment;
 
         public ClubEventViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -107,6 +143,8 @@ public class ClubEventAdapter extends RecyclerView.Adapter<ClubEventAdapter.Club
             tvContent = itemView.findViewById(R.id.tvClubEventContent);
             tvDate = itemView.findViewById(R.id.tvClubEventDate);
             ivOptions = itemView.findViewById(R.id.ivClubEventOptions);
+            ivAttachment = itemView.findViewById(R.id.ivClubEventAttachment);
+            btnViewAttachment = itemView.findViewById(R.id.btnViewClubEventAttachment);
         }
     }
 }

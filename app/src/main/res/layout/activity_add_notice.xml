@@ -69,22 +69,31 @@
                     android:minLines="6" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Attachment URL (Placeholder for actual upload) -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilAttachment"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            <!-- Attachment Section -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Attachment URL (Optional)"
-                app:startIconDrawable="@android:drawable/ic_menu_save">
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etAttachment"
-                    android:layout_width="match_parent"
+                <Button
+                    android:id="@+id/btnPickFile"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:inputType="textUri" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:text="Attach File"
+                    app:icon="@android:drawable/ic_input_add" />
+
+                <TextView
+                    android:id="@+id/tvAttachmentStatus"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:text="No file attached"
+                    android:textAppearance="?attr/textAppearanceBodySmall" />
+            </LinearLayout>
 
             <View
                 android:layout_width="match_parent"

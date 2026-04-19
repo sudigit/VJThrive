@@ -49,6 +49,42 @@ public class NoticeAdapter extends RecyclerView.Adapter<NoticeAdapter.NoticeView
         holder.tvAuthor.setText("Posted by: " + notice.getAuthor());
         holder.tvDate.setText(dateFormat.format(new Date(notice.getTimestamp())));
 
+        // Handle Attachments
+        String attachment = notice.getAttachment();
+        if (attachment != null && !attachment.isEmpty()) {
+            holder.btnViewAttachment.setVisibility(View.VISIBLE);
+            
+            boolean isPdf = attachment.toLowerCase().contains(".pdf");
+            holder.btnViewAttachment.setText(isPdf ? "View PDF" : "View Image");
+            
+            holder.btnViewAttachment.setOnClickListener(v -> {
+                android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(attachment));
+                v.getContext().startActivity(intent);
+            });
+
+            // If it's an image or PDF, show preview
+            if (isPdf || attachment.contains(".jpg") || attachment.contains(".jpeg") || attachment.contains(".png") || attachment.contains(".webp") || attachment.contains("image/upload")) {
+                holder.ivAttachment.setVisibility(View.VISIBLE);
+                
+                String previewUrl = attachment;
+                if (isPdf && attachment.contains("/image/upload/")) {
+                    // Cloudinary trick: Use pg_1 (page 1) and change extension to .jpg for a high-quality preview
+                    previewUrl = attachment.replaceAll("(?i)\\.pdf", ".jpg").replace("/image/upload/", "/image/upload/pg_1/");
+                }
+
+                com.bumptech.glide.Glide.with(holder.itemView.getContext())
+                        .load(previewUrl)
+                        .placeholder(android.R.drawable.ic_menu_gallery)
+                        .error(android.R.drawable.ic_menu_report_image)
+                        .into(holder.ivAttachment);
+            } else {
+                holder.ivAttachment.setVisibility(View.GONE);
+            }
+        } else {
+            holder.ivAttachment.setVisibility(View.GONE);
+            holder.btnViewAttachment.setVisibility(View.GONE);
+        }
+
         // Show options menu only for admin
         if ("admin".equalsIgnoreCase(userRole)) {
             holder.ivOptions.setVisibility(View.VISIBLE);
@@ -83,16 +119,19 @@ public class NoticeAdapter extends RecyclerView.Adapter<NoticeAdapter.NoticeView
     }
 
     static class NoticeViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitle, tvContent, tvAuthor, tvDate;
-        ImageView ivOptions;
+        TextView tvTitle, tvAuthor, tvContent, tvDate;
+        android.widget.ImageView ivOptions, ivAttachment;
+        android.widget.Button btnViewAttachment;
 
         public NoticeViewHolder(@NonNull View itemView) {
             super(itemView);
             tvTitle = itemView.findViewById(R.id.tvNoticeTitle);
-            tvContent = itemView.findViewById(R.id.tvNoticeContent);
             tvAuthor = itemView.findViewById(R.id.tvNoticeAuthor);
+            tvContent = itemView.findViewById(R.id.tvNoticeContent);
             tvDate = itemView.findViewById(R.id.tvNoticeDate);
             ivOptions = itemView.findViewById(R.id.ivNoticeOptions);
+            ivAttachment = itemView.findViewById(R.id.ivNoticeAttachment);
+            btnViewAttachment = itemView.findViewById(R.id.btnViewAttachment);
         }
     }
 }

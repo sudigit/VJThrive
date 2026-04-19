@@ -71,37 +71,77 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     static class SentMessageViewHolder extends RecyclerView.ViewHolder {
         TextView tvMessageBody, tvMessageTime;
+        android.widget.ImageView ivAttachment;
 
         SentMessageViewHolder(View itemView) {
             super(itemView);
             tvMessageBody = itemView.findViewById(R.id.tvMessageBody);
             tvMessageTime = itemView.findViewById(R.id.tvMessageTime);
+            ivAttachment = itemView.findViewById(R.id.ivMessageAttachment);
         }
 
-        void bind(Message message, SimpleDateFormat timeFormat) {
+        void bind(Message message, SimpleDateFormat dateFormat) {
             tvMessageBody.setText(message.getText());
-            if (message.getTimestamp() != null && message.getTimestamp() instanceof com.google.firebase.Timestamp) {
-                Date date = ((com.google.firebase.Timestamp) message.getTimestamp()).toDate();
-                tvMessageTime.setText(timeFormat.format(date));
+            if (message.getTimestamp() != null) {
+                if (message.getTimestamp() instanceof com.google.firebase.Timestamp) {
+                    tvMessageTime.setText(
+                            dateFormat.format(((com.google.firebase.Timestamp) message.getTimestamp()).toDate()));
+                } else if (message.getTimestamp() instanceof Long) {
+                    tvMessageTime.setText(dateFormat.format(new java.util.Date((Long) message.getTimestamp())));
+                }
+            }
+
+            String attachment = message.getAttachment();
+            if (attachment != null && !attachment.isEmpty()) {
+                ivAttachment.setVisibility(View.VISIBLE);
+                
+                boolean isPdf = attachment.toLowerCase().contains(".pdf");
+                String previewUrl = attachment;
+                if (isPdf && attachment.contains("/image/upload/")) {
+                    previewUrl = attachment.replaceAll("(?i)\\.pdf", ".jpg").replace("/image/upload/", "/image/upload/pg_1/");
+                }
+
+                com.bumptech.glide.Glide.with(itemView.getContext())
+                        .load(previewUrl)
+                        .placeholder(android.R.drawable.ic_menu_gallery)
+                        .error(android.R.drawable.ic_menu_report_image)
+                        .into(ivAttachment);
+                
+                ivAttachment.setOnClickListener(v -> {
+                    android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(attachment));
+                    v.getContext().startActivity(intent);
+                });
+                
+                if ("[Attachment]".equals(message.getText())) {
+                    tvMessageBody.setVisibility(View.GONE);
+                } else {
+                    tvMessageBody.setVisibility(View.VISIBLE);
+                    if (isPdf) {
+                        tvMessageBody.setText("📄 PDF Document");
+                    }
+                }
             } else {
-                tvMessageTime.setText("...");
+                ivAttachment.setVisibility(View.GONE);
+                tvMessageBody.setVisibility(View.VISIBLE);
             }
         }
     }
 
     static class ReceivedMessageViewHolder extends RecyclerView.ViewHolder {
         TextView tvMessageBody, tvSenderName, tvMessageTime;
+        android.widget.ImageView ivAttachment;
 
         ReceivedMessageViewHolder(View itemView) {
             super(itemView);
             tvMessageBody = itemView.findViewById(R.id.tvMessageBody);
             tvSenderName = itemView.findViewById(R.id.tvSenderName);
             tvMessageTime = itemView.findViewById(R.id.tvMessageTime);
+            ivAttachment = itemView.findViewById(R.id.ivMessageAttachment);
         }
 
         void bind(Message message, boolean isGroup, SimpleDateFormat timeFormat) {
             tvMessageBody.setText(message.getText());
-            
+
             if (isGroup && message.getSenderName() != null) {
                 tvSenderName.setVisibility(View.VISIBLE);
                 tvSenderName.setText(message.getSenderName());
@@ -114,6 +154,40 @@ public class MessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                 tvMessageTime.setText(timeFormat.format(date));
             } else {
                 tvMessageTime.setText("");
+            }
+
+            String attachment = message.getAttachment();
+            if (attachment != null && !attachment.isEmpty()) {
+                ivAttachment.setVisibility(View.VISIBLE);
+                
+                boolean isPdf = attachment.toLowerCase().contains(".pdf");
+                String previewUrl = attachment;
+                if (isPdf && attachment.contains("/image/upload/")) {
+                    previewUrl = attachment.replaceAll("(?i)\\.pdf", ".jpg").replace("/image/upload/", "/image/upload/pg_1/");
+                }
+
+                com.bumptech.glide.Glide.with(itemView.getContext())
+                        .load(previewUrl)
+                        .placeholder(android.R.drawable.ic_menu_gallery)
+                        .error(android.R.drawable.ic_menu_report_image)
+                        .into(ivAttachment);
+
+                ivAttachment.setOnClickListener(v -> {
+                    android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(attachment));
+                    v.getContext().startActivity(intent);
+                });
+
+                if ("[Attachment]".equals(message.getText())) {
+                    tvMessageBody.setVisibility(View.GONE);
+                } else {
+                    tvMessageBody.setVisibility(View.VISIBLE);
+                    if (isPdf) {
+                        tvMessageBody.setText("📄 PDF Document");
+                    }
+                }
+            } else {
+                ivAttachment.setVisibility(View.GONE);
+                tvMessageBody.setVisibility(View.VISIBLE);
             }
         }
     }

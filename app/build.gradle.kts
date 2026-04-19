@@ -57,10 +57,16 @@ dependencies {
     implementation("com.google.firebase:firebase-auth")     // For Login
     implementation("com.google.firebase:firebase-firestore") // For Notices/Chats
     implementation("com.google.firebase:firebase-storage")  // For Attachments
+    implementation("com.google.firebase:firebase-messaging") // For Notifications
     implementation(libs.material.calendar.view)
 
 
     // Add the dependencies for any other desired Firebase products
     // https://firebase.google.com/docs/android/setup#available-libraries
+
+    // Cloudinary Android SDK
+    implementation("com.cloudinary:cloudinary-android:2.3.1")
+// Recommended: Glide or Picasso for easy image loading
+    implementation("com.github.bumptech.glide:glide:4.16.0")
 
 }

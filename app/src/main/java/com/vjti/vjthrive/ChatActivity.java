@@ -34,7 +34,7 @@ public class ChatActivity extends AppCompatActivity {
     private MessageAdapter messageAdapter;
     private List<Message> messageList;
     private EditText etMessageInput;
-    private ImageButton btnSendMessage;
+    private ImageButton btnSendMessage, btnAttachFile;
     private ProgressBar progressBar;
 
     private FirebaseFirestore db;
@@ -71,11 +71,12 @@ public class ChatActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerViewMessages);
         etMessageInput = findViewById(R.id.etMessageInput);
         btnSendMessage = findViewById(R.id.btnSendMessage);
+        btnAttachFile = findViewById(R.id.btnAttachFile);
         progressBar = findViewById(R.id.progressBar);
 
         db = FirebaseFirestore.getInstance();
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        
+
         if (currentUser != null) {
             currentUserId = currentUser.getUid();
             fetchCurrentUserName();
@@ -87,6 +88,51 @@ public class ChatActivity extends AppCompatActivity {
         fetchChatDetailsAndSetupAdapter();
 
         btnSendMessage.setOnClickListener(v -> sendMessage());
+        btnAttachFile.setOnClickListener(v -> pickFile());
+    }
+
+    private final androidx.activity.result.ActivityResultLauncher<String> filePickerLauncher = registerForActivityResult(
+            new androidx.activity.result.contract.ActivityResultContracts.GetContent(), uri -> {
+                if (uri != null) {
+                    uploadFileAndSend(uri);
+                }
+            });
+
+    private void pickFile() {
+        filePickerLauncher.launch("*/*");
+    }
+
+    private void uploadFileAndSend(android.net.Uri uri) {
+        Toast.makeText(this, "Uploading attachment...", Toast.LENGTH_SHORT).show();
+        btnAttachFile.setEnabled(false);
+
+        com.vjti.vjthrive.utils.CloudinaryHelper.uploadFile(uri, "chat",
+                new com.vjti.vjthrive.utils.CloudinaryHelper.UploadListener() {
+                    @Override
+                    public void onSuccess(String url) {
+                        btnAttachFile.setEnabled(true);
+                        sendMessageWithAttachment(url);
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        btnAttachFile.setEnabled(true);
+                        Toast.makeText(ChatActivity.this, "Upload failed: " + error, Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+    private void sendMessageWithAttachment(String attachmentUrl) {
+        Map<String, Object> messageMap = new HashMap<>();
+        messageMap.put("text", "[Attachment]");
+        messageMap.put("senderId", currentUserId);
+        messageMap.put("senderName", currentUserName != null ? currentUserName : "User");
+        messageMap.put("attachment", attachmentUrl);
+        messageMap.put("timestamp", FieldValue.serverTimestamp());
+
+        messagesRef.add(messageMap).addOnFailureListener(e -> {
+            Toast.makeText(this, "Failed to send message", Toast.LENGTH_SHORT).show();
+        });
     }
 
     private void fetchCurrentUserName() {
@@ -102,7 +148,7 @@ public class ChatActivity extends AppCompatActivity {
             if (doc.exists()) {
                 Boolean grp = doc.getBoolean("group");
                 isGroupChat = grp != null && grp;
-                
+
                 // If it's 1:1, resolve the other person's name for the title
                 if (!isGroupChat) {
                     List<String> members = (List<String>) doc.get("members");
@@ -119,16 +165,16 @@ public class ChatActivity extends AppCompatActivity {
                     }
                 }
             }
-            
+
             messagesRef = db.collection("chats").document(chatId).collection("messages");
             messageList = new ArrayList<>();
             messageAdapter = new MessageAdapter(messageList, currentUserId, isGroupChat);
-            
+
             LinearLayoutManager layoutManager = new LinearLayoutManager(this);
             layoutManager.setStackFromEnd(true);
             recyclerView.setLayoutManager(layoutManager);
             recyclerView.setAdapter(messageAdapter);
-            
+
             loadMessages();
         });
     }
@@ -157,7 +203,8 @@ public class ChatActivity extends AppCompatActivity {
 
     private void sendMessage() {
         String text = etMessageInput.getText().toString().trim();
-        if (text.isEmpty()) return;
+        if (text.isEmpty())
+            return;
 
         etMessageInput.setText("");
 
@@ -165,6 +212,7 @@ public class ChatActivity extends AppCompatActivity {
         messageMap.put("text", text);
         messageMap.put("senderId", currentUserId);
         messageMap.put("senderName", currentUserName != null ? currentUserName : "User");
+        messageMap.put("attachment", null);
         messageMap.put("timestamp", FieldValue.serverTimestamp());
 
         messagesRef.add(messageMap).addOnFailureListener(e -> {

@@ -76,6 +76,30 @@
             app:layout_constraintTop_toBottomOf="@+id/tvEventDate"
             tools:text="This is the content of the club event. It may span multiple lines, but we will limit it to 3 lines initially." />
 
+        <ImageView
+            android:id="@+id/ivClubEventAttachment"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="8dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@+id/tvClubEventContent"
+            tools:visibility="visible"
+            tools:src="@android:drawable/ic_menu_gallery" />
+
+        <Button
+            android:id="@+id/btnViewClubEventAttachment"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="View Attachment"
+            android:visibility="gone"
+            app:icon="@android:drawable/ic_menu_view"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ivClubEventAttachment"
+            tools:visibility="visible" />
+
         <TextView
             android:id="@+id/tvClubEventDate"
             android:layout_width="wrap_content"
@@ -85,7 +109,7 @@
             android:textColor="?android:attr/textColorSecondary"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvClubEventContent"
+            app:layout_constraintTop_toBottomOf="@+id/btnViewClubEventAttachment"
             tools:text="Oct 24, 2023" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>

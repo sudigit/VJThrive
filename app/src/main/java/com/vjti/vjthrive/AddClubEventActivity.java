@@ -30,11 +30,16 @@ public class AddClubEventActivity extends AppCompatActivity {
 
     private static final String TAG = "AddClubEventActivity";
 
-    private TextInputEditText etClub, etTitle, etContent, etAttachment;
+    private TextInputEditText etClub, etTitle, etContent;
+    private android.widget.Button btnPickFile;
+    private android.widget.TextView tvAttachmentStatus;
     private android.widget.TextView tvSelectedDate;
     private android.widget.Button btnPickDate;
     private ChipGroup cgColors;
     private ExtendedFloatingActionButton fabSend;
+
+    private String attachmentUrl = "";
+    private boolean isUploading = false;
 
     private FirebaseFirestore db;
     private String selectedColor = "#6200EE"; // Default Material Purple
@@ -53,13 +58,54 @@ public class AddClubEventActivity extends AppCompatActivity {
         setupColorSelection();
 
         fabSend.setOnClickListener(v -> postClubEvent());
+        btnPickFile.setOnClickListener(v -> pickFile());
+    }
+
+    private final androidx.activity.result.ActivityResultLauncher<String> filePickerLauncher = registerForActivityResult(
+            new androidx.activity.result.contract.ActivityResultContracts.GetContent(), uri -> {
+                if (uri != null) {
+                    uploadFileToCloudinary(uri);
+                }
+            });
+
+    private void pickFile() {
+        filePickerLauncher.launch("*/*");
+    }
+
+    private void uploadFileToCloudinary(android.net.Uri uri) {
+        isUploading = true;
+        tvAttachmentStatus.setText("Uploading...");
+        btnPickFile.setEnabled(false);
+        fabSend.setEnabled(false);
+
+        com.vjti.vjthrive.utils.CloudinaryHelper.uploadFile(uri, "club",
+                new com.vjti.vjthrive.utils.CloudinaryHelper.UploadListener() {
+                    @Override
+                    public void onSuccess(String url) {
+                        isUploading = false;
+                        attachmentUrl = url;
+                        tvAttachmentStatus.setText("File attached!");
+                        btnPickFile.setEnabled(true);
+                        fabSend.setEnabled(true);
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        isUploading = false;
+                        tvAttachmentStatus.setText("Upload failed: " + error);
+                        btnPickFile.setEnabled(true);
+                        fabSend.setEnabled(true);
+                        Toast.makeText(AddClubEventActivity.this, "Upload failed: " + error, Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void initViews() {
         etClub = findViewById(R.id.etClub);
         etTitle = findViewById(R.id.etTitle);
         etContent = findViewById(R.id.etContent);
-        etAttachment = findViewById(R.id.etAttachment);
+        btnPickFile = findViewById(R.id.btnPickFile);
+        tvAttachmentStatus = findViewById(R.id.tvAttachmentStatus);
         tvSelectedDate = findViewById(R.id.tvSelectedDate);
         btnPickDate = findViewById(R.id.btnPickDate);
         cgColors = findViewById(R.id.cgColors);
@@ -86,16 +132,22 @@ public class AddClubEventActivity extends AppCompatActivity {
 
     private void setupColorSelection() {
         cgColors.setOnCheckedStateChangeListener((group, checkedIds) -> {
-            if (checkedIds.isEmpty()) return;
-            
+            if (checkedIds.isEmpty())
+                return;
+
             int checkedId = checkedIds.get(0);
-            if (checkedId == R.id.chipRed) selectedColor = "#F44336";
-            else if (checkedId == R.id.chipBlue) selectedColor = "#2196F3";
-            else if (checkedId == R.id.chipGreen) selectedColor = "#4CAF50";
-            else if (checkedId == R.id.chipYellow) selectedColor = "#FFEB3B";
-            else if (checkedId == R.id.chipPurple) selectedColor = "#9C27B0";
+            if (checkedId == R.id.chipRed)
+                selectedColor = "#F44336";
+            else if (checkedId == R.id.chipBlue)
+                selectedColor = "#2196F3";
+            else if (checkedId == R.id.chipGreen)
+                selectedColor = "#4CAF50";
+            else if (checkedId == R.id.chipYellow)
+                selectedColor = "#FFEB3B";
+            else if (checkedId == R.id.chipPurple)
+                selectedColor = "#9C27B0";
         });
-        
+
         // Default selection
         cgColors.check(R.id.chipPurple);
     }
@@ -118,8 +170,11 @@ public class AddClubEventActivity extends AppCompatActivity {
         String clubId = etClub.getText().toString().trim();
         String title = etTitle.getText().toString().trim();
         String description = etContent.getText().toString().trim();
-        // Attachment and selectedColor are kept for UI/Logic but not explicitly required by the user in 'events'
-        // String attachment = etAttachment.getText().toString().trim();
+
+        if (isUploading) {
+            Toast.makeText(this, "Please wait for upload to complete", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         if (TextUtils.isEmpty(clubId)) {
             etClub.setError("Club name is required");
@@ -141,8 +196,9 @@ public class AddClubEventActivity extends AppCompatActivity {
         fabSend.setEnabled(false);
         Toast.makeText(this, "Posting update...", Toast.LENGTH_SHORT).show();
 
-        String currentUserId = FirebaseAuth.getInstance().getCurrentUser() != null ? 
-                FirebaseAuth.getInstance().getCurrentUser().getUid() : "unknown";
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser() != null
+                ? FirebaseAuth.getInstance().getCurrentUser().getUid()
+                : "unknown";
 
         // Convert long eventDate to Firestore Timestamp
         com.google.firebase.Timestamp eventTimestamp = new com.google.firebase.Timestamp(new Date(selectedEventDate));
@@ -153,8 +209,8 @@ public class AddClubEventActivity extends AppCompatActivity {
                 description,
                 eventTimestamp,
                 clubId,
-                currentUserId
-        );
+                currentUserId,
+                attachmentUrl);
 
         Log.d(TAG, "Saving event to Firestore: " + title);
 
@@ -168,7 +224,8 @@ public class AddClubEventActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     Log.e(TAG, "Error saving event", e);
                     fabSend.setEnabled(true);
-                    Toast.makeText(AddClubEventActivity.this, "Failed to post: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AddClubEventActivity.this, "Failed to post: " + e.getMessage(), Toast.LENGTH_SHORT)
+                            .show();
                 });
     }
 }

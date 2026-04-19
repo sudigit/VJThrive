@@ -42,6 +42,15 @@
         android:gravity="center_vertical"
         android:elevation="8dp">
 
+        <ImageButton
+            android:id="@+id/btnAttachFile"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_input_add"
+            android:tint="?attr/colorSecondary"
+            android:contentDescription="Attach" />
+
         <EditText
             android:id="@+id/etMessageInput"
             android:layout_width="0dp"

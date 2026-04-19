@@ -39,9 +39,14 @@ public class AddNoticeActivity extends AppCompatActivity {
 
     private static final String TAG = "AddNoticeActivity";
 
-    private TextInputEditText etTitle, etContent, etAttachment;
+    private TextInputEditText etTitle, etContent;
+    private android.widget.Button btnPickFile;
+    private android.widget.TextView tvAttachmentStatus;
     private ChipGroup cgProgrammes, cgDepts, cgBranches, cgYears;
     private ExtendedFloatingActionButton fabSend;
+
+    private String attachmentUrl = "";
+    private boolean isUploading = false;
 
     private List<String> selectedProgrammes = new ArrayList<>();
     private List<String> selectedDepts = new ArrayList<>();
@@ -66,12 +71,53 @@ public class AddNoticeActivity extends AppCompatActivity {
         setupMultiSelectListeners();
 
         fabSend.setOnClickListener(v -> postNotice());
+        btnPickFile.setOnClickListener(v -> pickFile());
+    }
+
+    private final androidx.activity.result.ActivityResultLauncher<String> filePickerLauncher = registerForActivityResult(
+            new androidx.activity.result.contract.ActivityResultContracts.GetContent(), uri -> {
+                if (uri != null) {
+                    uploadFileToCloudinary(uri);
+                }
+            });
+
+    private void pickFile() {
+        filePickerLauncher.launch("*/*");
+    }
+
+    private void uploadFileToCloudinary(android.net.Uri uri) {
+        isUploading = true;
+        tvAttachmentStatus.setText("Uploading...");
+        btnPickFile.setEnabled(false);
+        fabSend.setEnabled(false);
+
+        com.vjti.vjthrive.utils.CloudinaryHelper.uploadFile(uri, "notice",
+                new com.vjti.vjthrive.utils.CloudinaryHelper.UploadListener() {
+                    @Override
+                    public void onSuccess(String url) {
+                        isUploading = false;
+                        attachmentUrl = url;
+                        tvAttachmentStatus.setText("File attached!");
+                        btnPickFile.setEnabled(true);
+                        fabSend.setEnabled(true);
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        isUploading = false;
+                        tvAttachmentStatus.setText("Upload failed: " + error);
+                        btnPickFile.setEnabled(true);
+                        fabSend.setEnabled(true);
+                        Toast.makeText(AddNoticeActivity.this, "Upload failed: " + error, Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
     private void initViews() {
         etTitle = findViewById(R.id.etTitle);
         etContent = findViewById(R.id.etContent);
-        etAttachment = findViewById(R.id.etAttachment);
+        btnPickFile = findViewById(R.id.btnPickFile);
+        tvAttachmentStatus = findViewById(R.id.tvAttachmentStatus);
         cgProgrammes = findViewById(R.id.cgProgrammes);
         cgDepts = findViewById(R.id.cgDepts);
         cgBranches = findViewById(R.id.cgBranches);
@@ -142,7 +188,8 @@ public class AddNoticeActivity extends AppCompatActivity {
         });
     }
 
-    private void showMultiSelectDialog(String title, String[] options, List<String> selectionList, ChipGroup chipGroup) {
+    private void showMultiSelectDialog(String title, String[] options, List<String> selectionList,
+            ChipGroup chipGroup) {
         boolean[] checkedItems = new boolean[options.length];
         for (int i = 0; i < options.length; i++) {
             checkedItems[i] = selectionList.contains(options[i]);
@@ -181,7 +228,11 @@ public class AddNoticeActivity extends AppCompatActivity {
     private void postNotice() {
         String title = etTitle.getText().toString().trim();
         String content = etContent.getText().toString().trim();
-        String attachment = etAttachment.getText().toString().trim();
+
+        if (isUploading) {
+            Toast.makeText(this, "Please wait for upload to complete", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         if (TextUtils.isEmpty(title)) {
             etTitle.setError("Title is required");
@@ -203,13 +254,12 @@ public class AddNoticeActivity extends AppCompatActivity {
                 authorName,
                 title,
                 content,
-                attachment,
+                attachmentUrl,
                 timestamp,
                 new ArrayList<>(selectedProgrammes),
                 new ArrayList<>(selectedDepts),
                 new ArrayList<>(selectedBranches),
-                new ArrayList<>(selectedYears)
-        );
+                new ArrayList<>(selectedYears));
 
         db.collection("notices").document(noticeId)
                 .set(notice)
@@ -219,7 +269,8 @@ public class AddNoticeActivity extends AppCompatActivity {
                 })
                 .addOnFailureListener(e -> {
                     fabSend.setEnabled(true);
-                    Toast.makeText(AddNoticeActivity.this, "Failed to post: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AddNoticeActivity.this, "Failed to post: " + e.getMessage(), Toast.LENGTH_SHORT)
+                            .show();
                 });
     }
 }
