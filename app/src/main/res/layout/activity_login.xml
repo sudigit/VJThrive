@@ -10,7 +10,7 @@
         android:id="@+id/ivLogo"
         android:layout_width="160dp"
         android:layout_height="160dp"
-        android:src="@drawable/ic_logo1"
+        android:src="@drawable/ic_logo"
         android:layout_marginBottom="16dp"
         android:contentDescription="VJThrive Logo" />
 
