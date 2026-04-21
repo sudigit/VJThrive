@@ -285,9 +285,7 @@ public class SignupActivity extends AppCompatActivity {
             userData.put("branch", branch);
             userData.put("graduationYear", graduationYear);
 
-            // Placeholder subjects (Sem 1 for now — will be updated later)
-            List<String> subjects = CollegeDataProvider.getSubjects(programme, branch, 1);
-            userData.put("subjects", subjects);
+            userData.put("mdmSubject", "");
 
         } else if ("faculty".equals(role)) {
             userData.put("department", department);

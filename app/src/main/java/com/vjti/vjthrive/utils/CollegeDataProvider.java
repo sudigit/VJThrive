@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * Centralized provider for all college structure data:
  * Programmes, Departments (per programme), Branches (per department),
- * Graduation years (dynamic), and placeholder Subjects.
+ * Graduation years (dynamic).
  *
  * Update the maps here when the real VJTI structure is finalized.
  */
@@ -123,16 +123,4 @@ public class CollegeDataProvider {
         return years;
     }
 
-    /**
-     * Returns placeholder subjects for a given programme, branch, and semester.
-     * Replace with real subject data later.
-     */
-    public static List<String> getSubjects(String programme, String branch, int semester) {
-        List<String> subjects = new ArrayList<>();
-        // Placeholder: "Subject A in Sem N, Programme, Branch"
-        for (char c = 'A'; c <= 'E'; c++) {
-            subjects.add("Subject " + c + " in Sem " + semester + ", " + programme + ", " + branch);
-        }
-        return subjects;
-    }
 }

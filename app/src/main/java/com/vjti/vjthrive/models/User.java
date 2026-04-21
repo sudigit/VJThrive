@@ -10,7 +10,7 @@ public class User {
     private String programme;   // Diploma, B.Tech., M.Tech.
     private String department;  // Computer Engineering, IT, etc.
     private String branch;
-    private List<String> subjects;
+    private String mdmSubject;
     private int graduationYear;
     private String role;        // student, faculty, admin
     private boolean isSecretary;
@@ -21,7 +21,7 @@ public class User {
     // Full constructor (student)
     public User(String name, String email, String rollNo, String programme,
                 String department, String branch, int graduationYear,
-                List<String> subjects, String role, boolean isSecretary) {
+                String mdmSubject, String role, boolean isSecretary) {
         this.name = name;
         this.email = email;
         this.rollNo = rollNo;
@@ -29,7 +29,7 @@ public class User {
         this.department = department;
         this.branch = branch;
         this.graduationYear = graduationYear;
-        this.subjects = subjects;
+        this.mdmSubject = mdmSubject;
         this.role = role;
         this.isSecretary = isSecretary;
     }
@@ -75,8 +75,8 @@ public class User {
     public int getGraduationYear() { return graduationYear; }
     public void setGraduationYear(int graduationYear) { this.graduationYear = graduationYear; }
 
-    public List<String> getSubjects() { return subjects; }
-    public void setSubjects(List<String> subjects) { this.subjects = subjects; }
+    public String getMdmSubject() { return mdmSubject; }
+    public void setMdmSubject(String mdmSubject) { this.mdmSubject = mdmSubject; }
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }

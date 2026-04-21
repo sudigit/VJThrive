@@ -43,6 +43,7 @@
         <activity android:name=".ChatActivity" />
         <activity android:name=".CreateChatActivity" />
         <activity android:name=".CreateFacultyGroupActivity" />
+        <activity android:name=".AdminPanelActivity" />
 
     </application>
 

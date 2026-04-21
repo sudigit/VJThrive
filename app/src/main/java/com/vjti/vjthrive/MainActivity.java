@@ -78,6 +78,23 @@ public class MainActivity extends AppCompatActivity {
                 goToLogin();
             });
         }
+
+        // 4.1 Admin Panel Logic
+        ImageView btnAdminPanel = findViewById(R.id.btnAdminPanel);
+        if (btnAdminPanel != null) {
+            FirebaseFirestore.getInstance().collection("users").document(currentUser.getUid()).get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        if (documentSnapshot.exists()) {
+                            String role = documentSnapshot.getString("role");
+                            if ("admin".equals(role)) {
+                                btnAdminPanel.setVisibility(android.view.View.VISIBLE);
+                                btnAdminPanel.setOnClickListener(v -> {
+                                    startActivity(new Intent(MainActivity.this, AdminPanelActivity.class));
+                                });
+                            }
+                        }
+                    });
+        }
         
         // 5. Setup Bottom Navigation
         BottomNavigationView bottomNav = findViewById(R.id.bottom_navigation);
