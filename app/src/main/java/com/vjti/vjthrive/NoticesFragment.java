@@ -3,9 +3,12 @@ package com.vjti.vjthrive;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -34,6 +37,7 @@ public class NoticesFragment extends Fragment implements NoticeAdapter.OnNoticeC
     private RecyclerView rvNotices;
     private TextView tvEmptyNotices;
     private FloatingActionButton fabAddNotice;
+    private EditText etSearchNotices;
     
     private NoticeAdapter adapter;
     private List<Notice> noticeList;
@@ -60,6 +64,22 @@ public class NoticesFragment extends Fragment implements NoticeAdapter.OnNoticeC
         rvNotices = view.findViewById(R.id.rvNotices);
         tvEmptyNotices = view.findViewById(R.id.tvEmptyNotices);
         fabAddNotice = view.findViewById(R.id.fabAddNotice);
+        etSearchNotices = view.findViewById(R.id.etSearchNotices);
+        
+        etSearchNotices.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (adapter != null) {
+                    adapter.filter(s.toString());
+                }
+            }
+        });
         
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();

@@ -3,9 +3,12 @@ package com.vjti.vjthrive;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +38,7 @@ public class ClubEventsFragment extends Fragment implements ClubEventAdapter.OnC
     private RecyclerView rvClubEvents;
     private TextView tvEmptyClubEvents;
     private FloatingActionButton fabAddClubEvent;
+    private EditText etSearchClubEvents;
 
     private ClubEventAdapter adapter;
     private List<Event> eventList;
@@ -61,6 +65,22 @@ public class ClubEventsFragment extends Fragment implements ClubEventAdapter.OnC
         rvClubEvents = view.findViewById(R.id.rvClubEvents);
         tvEmptyClubEvents = view.findViewById(R.id.tvEmptyClubEvents);
         fabAddClubEvent = view.findViewById(R.id.fabAddClubEvent);
+        etSearchClubEvents = view.findViewById(R.id.etSearchClubEvents);
+        
+        etSearchClubEvents.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (adapter != null) {
+                    adapter.filter(s.toString());
+                }
+            }
+        });
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();

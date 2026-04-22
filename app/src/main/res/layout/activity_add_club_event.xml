@@ -17,9 +17,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:title="Add Club Update"
-            app:titleTextColor="?attr/colorOnSurface"
-            app:navigationIcon="@android:drawable/ic_menu_revert"
-            app:menu="@menu/add_club_event_menu" />
+            app:titleTextColor="?attr/colorOnSurface" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.core.widget.NestedScrollView

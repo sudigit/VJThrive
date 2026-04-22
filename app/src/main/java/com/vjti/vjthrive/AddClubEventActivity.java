@@ -114,18 +114,10 @@ public class AddClubEventActivity extends AppCompatActivity {
         btnPickDate.setOnClickListener(v -> showDatePicker());
 
         MaterialToolbar topAppBar = findViewById(R.id.topAppBar);
-        topAppBar.setNavigationOnClickListener(v -> finish());
-        topAppBar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_send) {
-                postClubEvent();
-                return true;
-            }
-            return false;
-        });
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, 0, systemBars.right, systemBars.bottom);
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom); // Apply top inset padding
             return insets;
         });
     }

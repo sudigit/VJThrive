@@ -6,6 +6,20 @@
     android:layout_height="match_parent"
     tools:context=".NoticesFragment">
 
+    <EditText
+        android:id="@+id/etSearchNotices"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:hint="Search notices by title, content or author..."
+        android:drawableStart="@android:drawable/ic_menu_search"
+        android:drawablePadding="8dp"
+        android:padding="12dp"
+        android:background="@android:drawable/editbox_background"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvNotices"
         android:layout_width="0dp"
@@ -13,7 +27,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/etSearchNotices"
         android:clipToPadding="false"
         android:paddingBottom="88dp"
         tools:listitem="@layout/item_notice" />

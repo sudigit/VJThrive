@@ -20,6 +20,7 @@ import java.util.Locale;
 public class NoticeAdapter extends RecyclerView.Adapter<NoticeAdapter.NoticeViewHolder> {
 
     private List<Notice> noticeList;
+    private List<Notice> noticeListFull;
     private String userRole;
     private OnNoticeClickListener clickListener;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
@@ -30,6 +31,7 @@ public class NoticeAdapter extends RecyclerView.Adapter<NoticeAdapter.NoticeView
 
     public NoticeAdapter(List<Notice> noticeList, String userRole, OnNoticeClickListener clickListener) {
         this.noticeList = noticeList;
+        this.noticeListFull = new java.util.ArrayList<>(noticeList);
         this.userRole = userRole;
         this.clickListener = clickListener;
     }
@@ -115,6 +117,26 @@ public class NoticeAdapter extends RecyclerView.Adapter<NoticeAdapter.NoticeView
     public void updateData(List<Notice> newNotices) {
         this.noticeList.clear();
         this.noticeList.addAll(newNotices);
+        this.noticeListFull = new java.util.ArrayList<>(newNotices);
+        notifyDataSetChanged();
+    }
+
+    public void filter(String query) {
+        noticeList.clear();
+        if (query == null || query.trim().isEmpty()) {
+            noticeList.addAll(noticeListFull);
+        } else {
+            String lowerCaseQuery = query.toLowerCase(Locale.getDefault());
+            for (Notice notice : noticeListFull) {
+                boolean matchesTitle = notice.getTitle() != null && notice.getTitle().toLowerCase(Locale.getDefault()).contains(lowerCaseQuery);
+                boolean matchesContent = notice.getContent() != null && notice.getContent().toLowerCase(Locale.getDefault()).contains(lowerCaseQuery);
+                boolean matchesAuthor = notice.getAuthor() != null && notice.getAuthor().toLowerCase(Locale.getDefault()).contains(lowerCaseQuery);
+                
+                if (matchesTitle || matchesContent || matchesAuthor) {
+                    noticeList.add(notice);
+                }
+            }
+        }
         notifyDataSetChanged();
     }
 

@@ -21,6 +21,7 @@ import java.util.Locale;
 public class ClubEventAdapter extends RecyclerView.Adapter<ClubEventAdapter.ClubEventViewHolder> {
 
     private List<Event> eventList;
+    private List<Event> eventListFull;
     private String userRole;
     private OnClubEventClickListener clickListener;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
@@ -31,6 +32,7 @@ public class ClubEventAdapter extends RecyclerView.Adapter<ClubEventAdapter.Club
 
     public ClubEventAdapter(List<Event> eventList, String userRole, OnClubEventClickListener clickListener) {
         this.eventList = eventList;
+        this.eventListFull = new java.util.ArrayList<>(eventList);
         this.userRole = userRole;
         this.clickListener = clickListener;
     }
@@ -124,7 +126,27 @@ public class ClubEventAdapter extends RecyclerView.Adapter<ClubEventAdapter.Club
     }
 
     public void updateData(List<Event> newEvents) {
-        this.eventList = newEvents;
+        this.eventList = new java.util.ArrayList<>(newEvents);
+        this.eventListFull = new java.util.ArrayList<>(newEvents);
+        notifyDataSetChanged();
+    }
+
+    public void filter(String query) {
+        eventList.clear();
+        if (query == null || query.trim().isEmpty()) {
+            eventList.addAll(eventListFull);
+        } else {
+            String lowerCaseQuery = query.toLowerCase(Locale.getDefault());
+            for (Event event : eventListFull) {
+                boolean matchesTitle = event.getTitle() != null && event.getTitle().toLowerCase(Locale.getDefault()).contains(lowerCaseQuery);
+                boolean matchesDescription = event.getDescription() != null && event.getDescription().toLowerCase(Locale.getDefault()).contains(lowerCaseQuery);
+                boolean matchesClub = event.getClubId() != null && event.getClubId().toLowerCase(Locale.getDefault()).contains(lowerCaseQuery);
+                
+                if (matchesTitle || matchesDescription || matchesClub) {
+                    eventList.add(event);
+                }
+            }
+        }
         notifyDataSetChanged();
     }
 
