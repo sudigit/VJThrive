@@ -2,8 +2,6 @@ package com.vjti.vjthrive;
 
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -11,6 +9,10 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -18,17 +20,24 @@ import com.vjti.vjthrive.models.Chat;
 import com.vjti.vjthrive.utils.CollegeDataProvider;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public class CreateFacultyGroupActivity extends AppCompatActivity {
 
     private EditText etGroupTitle, etSubjectFilter;
-    private AutoCompleteTextView actvProgramme, actvDepartment, actvBranch, actvGradYear;
+    private ChipGroup cgProgrammes, cgDepts, cgBranches, cgYears;
     private TextView tvMatchingCount;
     private ExtendedFloatingActionButton fabCreateGroup;
+
+    private final List<String> selectedProgrammes = new ArrayList<>();
+    private final List<String> selectedDepts = new ArrayList<>();
+    private final List<String> selectedBranches = new ArrayList<>();
+    private final List<String> selectedYears = new ArrayList<>();
 
     private FirebaseFirestore db;
     private String currentUserId;
@@ -42,7 +51,7 @@ public class CreateFacultyGroupActivity extends AppCompatActivity {
         currentUserId = FirebaseAuth.getInstance().getUid();
 
         initViews();
-        setupDropdowns();
+        setupMultiSelectListeners();
 
         fabCreateGroup.setOnClickListener(v -> createGroup());
     }
@@ -55,47 +64,91 @@ public class CreateFacultyGroupActivity extends AppCompatActivity {
 
         etGroupTitle = findViewById(R.id.etGroupTitle);
         etSubjectFilter = findViewById(R.id.etSubjectFilter);
-        actvProgramme = findViewById(R.id.actvProgramme);
-        actvDepartment = findViewById(R.id.actvDepartment);
-        actvBranch = findViewById(R.id.actvBranch);
-        actvGradYear = findViewById(R.id.actvGradYear);
+        cgProgrammes = findViewById(R.id.cgProgrammes);
+        cgDepts = findViewById(R.id.cgDepts);
+        cgBranches = findViewById(R.id.cgBranches);
+        cgYears = findViewById(R.id.cgYears);
         tvMatchingCount = findViewById(R.id.tvMatchingCount);
         fabCreateGroup = findViewById(R.id.fabCreateGroup);
     }
 
-    private void setupDropdowns() {
-        // Programme
-        String[] programmes = CollegeDataProvider.getProgrammes();
-        actvProgramme.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, programmes));
-
-        actvProgramme.setOnItemClickListener((parent, view, position, id) -> {
-            String selectedProg = programmes[position];
-            
-            // Depts
-            List<String> depts = CollegeDataProvider.getDepartments(selectedProg);
-            actvDepartment.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, depts));
-            actvDepartment.setText("");
-
-            // Grad Years
-            List<String> years = CollegeDataProvider.getGraduationYears(selectedProg);
-            actvGradYear.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, years));
-            actvGradYear.setText("");
+    private void setupMultiSelectListeners() {
+        // Programmes
+        MaterialButton btnProgrammes = findViewById(R.id.btnSelectProgrammes);
+        btnProgrammes.setOnClickListener(v -> {
+            String[] options = CollegeDataProvider.getProgrammes();
+            showMultiSelectDialog("Programmes", options, selectedProgrammes, cgProgrammes);
         });
 
-        actvDepartment.setOnItemClickListener((parent, view, position, id) -> {
-            String selectedDept = actvDepartment.getText().toString();
-            List<String> branches = CollegeDataProvider.getBranches(selectedDept);
-            actvBranch.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, branches));
-            actvBranch.setText("");
+        // Departments — show all departments regardless of programme selection
+        MaterialButton btnDepts = findViewById(R.id.btnSelectDepts);
+        btnDepts.setOnClickListener(v -> {
+            List<String> allDepts = CollegeDataProvider.getAllDepartments();
+            showMultiSelectDialog("Departments", allDepts.toArray(new String[0]), selectedDepts, cgDepts);
         });
+
+        // Branches — collect from all departments
+        MaterialButton btnBranches = findViewById(R.id.btnSelectBranches);
+        btnBranches.setOnClickListener(v -> {
+            Set<String> branchSet = new HashSet<>();
+            for (String dept : CollegeDataProvider.getAllDepartments()) {
+                branchSet.addAll(CollegeDataProvider.getBranches(dept));
+            }
+            List<String> sortedBranches = new ArrayList<>(branchSet);
+            Collections.sort(sortedBranches);
+            showMultiSelectDialog("Branches", sortedBranches.toArray(new String[0]), selectedBranches, cgBranches);
+        });
+
+        // Graduation Years — dynamic range
+        MaterialButton btnYears = findViewById(R.id.btnSelectYears);
+        btnYears.setOnClickListener(v -> {
+            int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+            String[] yearOptions = new String[6];
+            for (int i = 0; i < 6; i++) {
+                yearOptions[i] = String.valueOf(currentYear + i);
+            }
+            showMultiSelectDialog("Graduation Years", yearOptions, selectedYears, cgYears);
+        });
+    }
+
+    private void showMultiSelectDialog(String title, String[] options,
+                                       List<String> selectionList, ChipGroup chipGroup) {
+        boolean[] checkedItems = new boolean[options.length];
+        for (int i = 0; i < options.length; i++) {
+            checkedItems[i] = selectionList.contains(options[i]);
+        }
+
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Select " + title)
+                .setMultiChoiceItems(options, checkedItems, (dialog, which, isChecked) ->
+                        checkedItems[which] = isChecked)
+                .setPositiveButton("Done", (dialog, which) -> {
+                    selectionList.clear();
+                    chipGroup.removeAllViews();
+                    for (int i = 0; i < options.length; i++) {
+                        if (checkedItems[i]) {
+                            selectionList.add(options[i]);
+                            addChip(options[i], chipGroup, selectionList);
+                        }
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
+    }
+
+    private void addChip(String text, ChipGroup chipGroup, List<String> selectionList) {
+        Chip chip = new Chip(this);
+        chip.setText(text);
+        chip.setCloseIconVisible(true);
+        chip.setOnCloseIconClickListener(v -> {
+            chipGroup.removeView(chip);
+            selectionList.remove(text);
+        });
+        chipGroup.addView(chip);
     }
 
     private void createGroup() {
         String title = etGroupTitle.getText().toString().trim();
-        String programme = actvProgramme.getText().toString().trim();
-        String dept = actvDepartment.getText().toString().trim();
-        String branch = actvBranch.getText().toString().trim();
-        String gradYearStr = actvGradYear.getText().toString().trim();
         String subjectFilter = etSubjectFilter.getText().toString().trim();
 
         if (TextUtils.isEmpty(title)) {
@@ -106,54 +159,78 @@ public class CreateFacultyGroupActivity extends AppCompatActivity {
         fabCreateGroup.setEnabled(false);
         Toast.makeText(this, "Finding matching students...", Toast.LENGTH_SHORT).show();
 
-        // Build Query
-        com.google.firebase.firestore.Query query = db.collection("users").whereEqualTo("role", "student");
+        // Fetch ALL students — filter client-side to support multiple selections
+        // (Firestore doesn't support multiple whereIn on different fields)
+        db.collection("users").whereEqualTo("role", "student")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    List<String> memberIds = new ArrayList<>();
+                    memberIds.add(currentUserId); // faculty is always a member
 
-        if (!programme.isEmpty()) query = query.whereEqualTo("programme", programme);
-        if (!dept.isEmpty()) query = query.whereEqualTo("department", dept);
-        if (!branch.isEmpty()) query = query.whereEqualTo("branch", branch);
-        if (!gradYearStr.isEmpty()) {
-            try {
-                query = query.whereEqualTo("graduationYear", Integer.parseInt(gradYearStr));
-            } catch (NumberFormatException ignored) {}
-        }
+                    for (com.google.firebase.firestore.QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        // Programme filter
+                        if (!selectedProgrammes.isEmpty()) {
+                            String prog = doc.getString("programme");
+                            if (prog == null || !selectedProgrammes.contains(prog)) continue;
+                        }
+                        // Department filter
+                        if (!selectedDepts.isEmpty()) {
+                            String dept = doc.getString("department");
+                            if (dept == null || !selectedDepts.contains(dept)) continue;
+                        }
+                        // Branch filter
+                        if (!selectedBranches.isEmpty()) {
+                            String branch = doc.getString("branch");
+                            if (branch == null || !selectedBranches.contains(branch)) continue;
+                        }
+                        // Graduation Year filter
+                        if (!selectedYears.isEmpty()) {
+                            Long gradYear = doc.getLong("graduationYear");
+                            String gradYearStr = gradYear != null ? String.valueOf(gradYear) : "";
+                            if (!selectedYears.contains(gradYearStr)) continue;
+                        }
+                        // MDM Subject filter (substring match)
+                        if (!subjectFilter.isEmpty()) {
+                            String mdmSubject = doc.getString("mdmSubject");
+                            if (mdmSubject == null || !mdmSubject.toLowerCase()
+                                    .contains(subjectFilter.toLowerCase())) continue;
+                        }
 
-        query.get().addOnSuccessListener(queryDocumentSnapshots -> {
-            List<String> memberIds = new ArrayList<>();
-            memberIds.add(currentUserId); // Add faculty as member
-
-            for (com.google.firebase.firestore.QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                // If MDM subject filter is specified, check against user's mdmSubject string
-                if (!subjectFilter.isEmpty()) {
-                    String mdmSubject = doc.getString("mdmSubject");
-                    if (mdmSubject != null && mdmSubject.toLowerCase().contains(subjectFilter.toLowerCase())) {
                         memberIds.add(doc.getId());
                     }
-                } else {
-                    memberIds.add(doc.getId());
-                }
-            }
 
-            if (memberIds.size() <= 1) {
-                fabCreateGroup.setEnabled(true);
-                Toast.makeText(this, "No matching students found", Toast.LENGTH_SHORT).show();
-                return;
-            }
+                    int studentCount = memberIds.size() - 1;
+                    tvMatchingCount.setText("Found " + studentCount + " matching student(s)");
 
-            saveChatToFirestore(title, programme, dept, branch, gradYearStr, memberIds);
-        }).addOnFailureListener(e -> {
-            fabCreateGroup.setEnabled(true);
-            Toast.makeText(this, "Query failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-        });
+                    if (studentCount == 0) {
+                        fabCreateGroup.setEnabled(true);
+                        Toast.makeText(this, "No matching students found", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    saveChatToFirestore(title, memberIds);
+                })
+                .addOnFailureListener(e -> {
+                    fabCreateGroup.setEnabled(true);
+                    Toast.makeText(this, "Query failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
-    private void saveChatToFirestore(String title, String programme, String dept, String branch, String gradYear, List<String> members) {
+    private void saveChatToFirestore(String title, List<String> members) {
         String chatId = UUID.randomUUID().toString();
-        Chat chat = new Chat(chatId, title, programme, dept, branch, gradYear, currentUserId, members, true);
+        Chat chat = new Chat(
+                chatId, title,
+                new ArrayList<>(selectedProgrammes),
+                new ArrayList<>(selectedDepts),
+                new ArrayList<>(selectedBranches),
+                new ArrayList<>(selectedYears),
+                currentUserId, members, true
+        );
 
         db.collection("chats").document(chatId).set(chat)
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Group created with " + (members.size() - 1) + " students", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Group created with " + (members.size() - 1) + " students",
+                            Toast.LENGTH_LONG).show();
                     finish();
                 })
                 .addOnFailureListener(e -> {

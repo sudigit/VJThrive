@@ -17,7 +17,7 @@ import java.util.Map;
 public class CollegeDataProvider {
 
     // ── Programmes ──────────────────────────────────────────────────────
-    private static final String[] PROGRAMMES = {"Diploma", "B.Tech.", "M.Tech."};
+    private static final String[] PROGRAMMES = { "Diploma", "B.Tech.", "M.Tech." };
 
     // ── Programme → Duration (years) ────────────────────────────────────
     private static final Map<String, Integer> PROGRAMME_DURATION = new HashMap<>();
@@ -33,40 +33,34 @@ public class CollegeDataProvider {
 
     static {
         List<String> commonDepartments = Arrays.asList(
-                "Computer Engineering",
-                "Information Technology",
-                "Electrical Engineering",
-                "Mechanical Engineering",
-                "Civil Engineering",
-                "Textile Technology",
-                "Production Engineering"
-        );
+                "Computer and Information Technology",
+                "Electrical",
+                "Civil",
+                "Mechanical",
+                "Textile",
+                "Production");
 
-        // All programmes share the same department list (per user's clarification)
         PROGRAMME_DEPARTMENTS.put("Diploma", commonDepartments);
         PROGRAMME_DEPARTMENTS.put("B.Tech.", commonDepartments);
         PROGRAMME_DEPARTMENTS.put("M.Tech.", commonDepartments);
     }
 
     // ── Department → Branches ───────────────────────────────────────────
-    // For now, branch = department name (user will provide real mapping later)
     private static final Map<String, List<String>> DEPARTMENT_BRANCHES = new HashMap<>();
 
     static {
-        DEPARTMENT_BRANCHES.put("Computer Engineering",
-                Arrays.asList("Computer Engineering"));
-        DEPARTMENT_BRANCHES.put("Information Technology",
-                Arrays.asList("Information Technology"));
-        DEPARTMENT_BRANCHES.put("Electrical Engineering",
-                Arrays.asList("Electrical Engineering"));
-        DEPARTMENT_BRANCHES.put("Mechanical Engineering",
-                Arrays.asList("Mechanical Engineering"));
-        DEPARTMENT_BRANCHES.put("Civil Engineering",
-                Arrays.asList("Civil Engineering"));
-        DEPARTMENT_BRANCHES.put("Textile Technology",
-                Arrays.asList("Textile Technology"));
-        DEPARTMENT_BRANCHES.put("Production Engineering",
-                Arrays.asList("Production Engineering"));
+        DEPARTMENT_BRANCHES.put("Computer and Information Technology",
+                Arrays.asList("Computer", "Information Technology"));
+        DEPARTMENT_BRANCHES.put("Electrical",
+                Arrays.asList("Electrical", "Electronics", "Electronics and Telecommunication"));
+        DEPARTMENT_BRANCHES.put("Civil",
+                Arrays.asList("Civil"));
+        DEPARTMENT_BRANCHES.put("Mechanical",
+                Arrays.asList("Mechanical"));
+        DEPARTMENT_BRANCHES.put("Textile",
+                Arrays.asList("Textile"));
+        DEPARTMENT_BRANCHES.put("Production",
+                Arrays.asList("Production"));
     }
 
     // ── Public API ──────────────────────────────────────────────────────

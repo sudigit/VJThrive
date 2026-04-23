@@ -66,61 +66,61 @@
         <!-- Programme -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilProgramme"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:hint="Programme (e.g., B.Tech.)">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etProgramme"
+            android:hint="Programme">
+            <AutoCompleteTextView
+                android:id="@+id/actvProgramme"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text" />
+                android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Department -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilDepartment"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:hint="Department">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etDepartment"
+            <AutoCompleteTextView
+                android:id="@+id/actvDepartment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text" />
+                android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Branch -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilBranch"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:hint="Branch">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etBranch"
+            <AutoCompleteTextView
+                android:id="@+id/actvBranch"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="text" />
+                android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Graduation Year -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilGradYear"
-            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:hint="Graduation Year">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etGradYear"
+            <AutoCompleteTextView
+                android:id="@+id/actvGradYear"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="number" />
+                android:inputType="none" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <!-- MDM Subject -->

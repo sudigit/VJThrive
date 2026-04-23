@@ -5,10 +5,10 @@ import java.util.List;
 public class Chat {
     private String chat_id;
     private String name;
-    private String programme;
-    private String dept;
-    private String branch;
-    private String gradYear;
+    private List<String> programmes;
+    private List<String> depts;
+    private List<String> branches;
+    private List<String> gradYears;
     private String created_by;
     private List<String> members;
     private boolean isGroup;
@@ -17,13 +17,15 @@ public class Chat {
         // Required for Firestore
     }
 
-    public Chat(String chat_id, String name, String programme, String dept, String branch, String gradYear, String created_by, List<String> members, boolean isGroup) {
+    public Chat(String chat_id, String name, List<String> programmes, List<String> depts,
+                List<String> branches, List<String> gradYears, String created_by,
+                List<String> members, boolean isGroup) {
         this.chat_id = chat_id;
         this.name = name;
-        this.programme = programme;
-        this.dept = dept;
-        this.branch = branch;
-        this.gradYear = gradYear;
+        this.programmes = programmes;
+        this.depts = depts;
+        this.branches = branches;
+        this.gradYears = gradYears;
         this.created_by = created_by;
         this.members = members;
         this.isGroup = isGroup;
@@ -35,17 +37,17 @@ public class Chat {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
-    public String getProgramme() { return programme; }
-    public void setProgramme(String programme) { this.programme = programme; }
+    public List<String> getProgrammes() { return programmes; }
+    public void setProgrammes(List<String> programmes) { this.programmes = programmes; }
 
-    public String getDept() { return dept; }
-    public void setDept(String dept) { this.dept = dept; }
+    public List<String> getDepts() { return depts; }
+    public void setDepts(List<String> depts) { this.depts = depts; }
 
-    public String getBranch() { return branch; }
-    public void setBranch(String branch) { this.branch = branch; }
+    public List<String> getBranches() { return branches; }
+    public void setBranches(List<String> branches) { this.branches = branches; }
 
-    public String getGradYear() { return gradYear; }
-    public void setGradYear(String gradYear) { this.gradYear = gradYear; }
+    public List<String> getGradYears() { return gradYears; }
+    public void setGradYears(List<String> gradYears) { this.gradYears = gradYears; }
 
     public String getCreated_by() { return created_by; }
     public void setCreated_by(String created_by) { this.created_by = created_by; }

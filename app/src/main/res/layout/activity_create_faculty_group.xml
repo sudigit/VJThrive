@@ -27,13 +27,13 @@
             android:orientation="vertical"
             android:padding="20dp">
 
+            <!-- Group Title -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="Group Title"
                 app:endIconMode="clear_text">
-
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etGroupTitle"
                     android:layout_width="match_parent"
@@ -49,61 +49,69 @@
                 android:textAppearance="?attr/textAppearanceTitleMedium"
                 android:textColor="?attr/colorPrimary" />
 
-            <!-- Programme -->
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            <!-- Programmes -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSelectProgrammes"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="Programme">
-                <AutoCompleteTextView
-                    android:id="@+id/actvProgramme"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none" />
-            </com.google.android.material.textfield.TextInputLayout>
+                android:text="Select Programmes"
+                app:icon="@android:drawable/ic_menu_add" />
 
-            <!-- Department -->
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/cgProgrammes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" />
+
+            <!-- Departments -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSelectDepts"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:hint="Department">
-                <AutoCompleteTextView
-                    android:id="@+id/actvDepartment"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none" />
-            </com.google.android.material.textfield.TextInputLayout>
+                android:text="Select Departments"
+                app:icon="@android:drawable/ic_menu_add" />
 
-            <!-- Branch -->
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/cgDepts"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" />
+
+            <!-- Branches -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSelectBranches"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:hint="Branch">
-                <AutoCompleteTextView
-                    android:id="@+id/actvBranch"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none" />
-            </com.google.android.material.textfield.TextInputLayout>
+                android:text="Select Branches"
+                app:icon="@android:drawable/ic_menu_add" />
 
-            <!-- Grad Year -->
-            <com.google.android.material.textfield.TextInputLayout
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/cgBranches"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" />
+
+            <!-- Graduation Years -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSelectYears"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:hint="Graduation Year">
-                <AutoCompleteTextView
-                    android:id="@+id/actvGradYear"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="none" />
-            </com.google.android.material.textfield.TextInputLayout>
+                android:text="Select Graduation Years"
+                app:icon="@android:drawable/ic_menu_add" />
+
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/cgYears"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" />
 
             <!-- MDM Subject (Optional) -->
             <com.google.android.material.textfield.TextInputLayout
