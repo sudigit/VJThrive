@@ -81,6 +81,9 @@ public class User {
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 
+    @com.google.firebase.firestore.PropertyName("isSecretary")
     public boolean isSecretary() { return isSecretary; }
+    
+    @com.google.firebase.firestore.PropertyName("isSecretary")
     public void setSecretary(boolean secretary) { isSecretary = secretary; }
 }

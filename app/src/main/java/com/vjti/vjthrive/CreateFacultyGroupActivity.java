@@ -123,18 +123,11 @@ public class CreateFacultyGroupActivity extends AppCompatActivity {
             memberIds.add(currentUserId); // Add faculty as member
 
             for (com.google.firebase.firestore.QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                // If subject filter is specified, check against user's subjects list
+                // If MDM subject filter is specified, check against user's mdmSubject string
                 if (!subjectFilter.isEmpty()) {
-                    List<String> subjects = (List<String>) doc.get("subjects");
-                    if (subjects != null) {
-                        boolean match = false;
-                        for (String s : subjects) {
-                            if (s.toLowerCase().contains(subjectFilter.toLowerCase())) {
-                                match = true;
-                                break;
-                            }
-                        }
-                        if (match) memberIds.add(doc.getId());
+                    String mdmSubject = doc.getString("mdmSubject");
+                    if (mdmSubject != null && mdmSubject.toLowerCase().contains(subjectFilter.toLowerCase())) {
+                        memberIds.add(doc.getId());
                     }
                 } else {
                     memberIds.add(doc.getId());

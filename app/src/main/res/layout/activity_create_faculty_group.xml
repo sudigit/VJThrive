@@ -105,13 +105,13 @@
                     android:inputType="none" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Subject (Optional) -->
+            <!-- MDM Subject (Optional) -->
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:hint="Subject (Search substring, optional)"
+                android:hint="MDM Subject (Search substring, optional)"
                 app:endIconMode="clear_text">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etSubjectFilter"
