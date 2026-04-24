@@ -6,6 +6,7 @@ public class Event {
     private String title;
     private String description;
     private Timestamp eventDate;
+    private Timestamp createdAt;
     private String clubId;
     private String createdBy;
     private String attachment;
@@ -18,6 +19,16 @@ public class Event {
         this.title = title;
         this.description = description;
         this.eventDate = eventDate;
+        this.clubId = clubId;
+        this.createdBy = createdBy;
+        this.attachment = attachment;
+    }
+
+    public Event(String title, String description, Timestamp eventDate, Timestamp createdAt, String clubId, String createdBy, String attachment) {
+        this.title = title;
+        this.description = description;
+        this.eventDate = eventDate;
+        this.createdAt = createdAt;
         this.clubId = clubId;
         this.createdBy = createdBy;
         this.attachment = attachment;
@@ -69,6 +80,14 @@ public class Event {
 
     public void setAttachment(String attachment) {
         this.attachment = attachment;
+    }
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 
     // Helper to get milliseconds
