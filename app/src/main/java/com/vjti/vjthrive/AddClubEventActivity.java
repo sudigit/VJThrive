@@ -19,6 +19,7 @@ import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FieldValue;
 import com.vjti.vjthrive.models.ClubEvent;
 
 import java.text.SimpleDateFormat;
@@ -204,10 +205,20 @@ public class AddClubEventActivity extends AppCompatActivity {
                 currentUserId,
                 attachmentUrl);
 
+        // Build data map to include server timestamp for createdAt
+        java.util.Map<String, Object> eventData = new java.util.HashMap<>();
+        eventData.put("title", title);
+        eventData.put("description", description);
+        eventData.put("eventDate", eventTimestamp);
+        eventData.put("clubId", clubId);
+        eventData.put("createdBy", currentUserId);
+        eventData.put("attachment", attachmentUrl);
+        eventData.put("createdAt", FieldValue.serverTimestamp());
+
         Log.d(TAG, "Saving event to Firestore: " + title);
 
         db.collection("events")
-                .add(event)
+                .add(eventData)
                 .addOnSuccessListener(documentReference -> {
                     Log.d(TAG, "Event saved successfully with ID: " + documentReference.getId());
                     Toast.makeText(AddClubEventActivity.this, "Event posted successfully!", Toast.LENGTH_LONG).show();

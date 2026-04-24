@@ -25,6 +25,8 @@ public class ClubEventAdapter extends RecyclerView.Adapter<ClubEventAdapter.Club
     private String userRole;
     private OnClubEventClickListener clickListener;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
+    private SimpleDateFormat eventDateFormat = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
+    private SimpleDateFormat timestampFormat = new SimpleDateFormat("MMM dd, yyyy • hh:mm a", Locale.getDefault());
 
     public interface OnClubEventClickListener {
         void onDeleteClick(Event event, int position);
@@ -51,16 +53,20 @@ public class ClubEventAdapter extends RecyclerView.Adapter<ClubEventAdapter.Club
         holder.tvTitle.setText(event.getTitle());
 
         if (event.getEventDate() != null) {
-            holder.tvEventDate.setText("Event Date: " + dateFormat.format(event.getEventDate().toDate()));
+            holder.tvEventDate.setText("Event Date: " + eventDateFormat.format(event.getEventDate().toDate()));
         } else {
             holder.tvEventDate.setText("No date set");
         }
 
         holder.tvContent.setText(event.getDescription());
 
-        // Use event date as display date if created timestamp is missing
-        if (event.getEventDate() != null) {
-            holder.tvDate.setText(dateFormat.format(event.getEventDate().toDate()));
+        // Show posted-at timestamp at the bottom (createdAt preferred, fallback to eventDate for old records)
+        if (event.getCreatedAt() != null) {
+            holder.tvDate.setText("Posted: " + timestampFormat.format(event.getCreatedAt().toDate()));
+        } else if (event.getEventDate() != null) {
+            holder.tvDate.setText("Posted: " + timestampFormat.format(event.getEventDate().toDate()));
+        } else {
+            holder.tvDate.setVisibility(View.GONE);
         }
 
         // Handle Attachments

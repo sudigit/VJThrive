@@ -110,7 +110,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/btnViewClubEventAttachment"
-            tools:text="Oct 24, 2023" />
+            tools:text="Posted: Apr 24, 2024 • 08:30 AM" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
